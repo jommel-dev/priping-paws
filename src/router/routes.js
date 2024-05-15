@@ -12,9 +12,6 @@ const routes = [
       { path: 'admin/login', component: () => import('src/pages/Admin/AdminLoginPage.vue') },
       { path: 'member/register', component: () => import('src/pages/RegisterPage.vue') },
       { path: 'member/login', component: () => import('src/pages/LoginPage.vue') },
-      { path: 'member/schedule', component: () => import('src/pages/SchedulePage.vue') },
-
-
     ],
     meta: { auth: false }
   },

@@ -2,15 +2,17 @@ import { db } from './index.js'
 import { getDocs, collection } from 'firebase/firestore'
 import { Loading, Notify } from 'quasar'
 
-const listDocuments = async (collectionName) => {
+const getPetDetails = async (collectionName, petId) => {
   return new Promise((resolve, reject) => {
     // Loading.show()
 
     try {
       getDocs(collection(db, collectionName)).then((querySnapshot) => {
-        const documents = []
+        let documents = {}
         querySnapshot.forEach((document) => {
-          documents.push({ id: document.id, ...document.data() })
+            if(petId === document.id){
+                documents = { ...document.data() }
+            }
         })
         Loading.hide()
         resolve(documents)
@@ -26,4 +28,4 @@ const listDocuments = async (collectionName) => {
   })
 }
 
-export default listDocuments
+export default getPetDetails

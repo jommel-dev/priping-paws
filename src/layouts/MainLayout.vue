@@ -1,6 +1,6 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header class=" bg-transparent text-black no-box-shadow no-shadow">
+  <q-layout view="lHh Lpr lFf" class="bg-white">
+    <q-header class="bg-white text-black no-box-shadow no-shadow">
       <q-toolbar>
         <q-btn flat @click="drawer = !drawer" round dense icon="menu" />
         <q-space />
@@ -14,21 +14,23 @@
       show-if-above 
       v-model="drawer" 
       side="left" 
-      class="q-pa-md bg-transparent"
+      class="q-pa-md sidebarStyle"
     >
       <!-- Profile -->
       <q-toolbar>
-        <q-toolbar-title><q-icon name="translate" size="1.5em" /><span class="text-h5 text-bold q-ml-md">Grammar<span class="text-orange">APP</span></span></q-toolbar-title>
+        <q-toolbar-title>
+          <span class="text-h5 text-bold q-ml-md text-red">Primpping <span class="text-deep-purple-7">Paws</span></span>
+        </q-toolbar-title>
       </q-toolbar>
-      <q-separator />
-      <q-toolbar>
+      <!-- <q-separator /> -->
+      <!-- <q-toolbar>
         <q-avatar>
-            <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+            <img src="/imgs/icons/dog.png">
         </q-avatar>
         <span class="q-ml-md">
           {{displayName}}
         </span>
-      </q-toolbar>
+      </q-toolbar> -->
         
       <q-separator />
       <div class="q-mt-md">
@@ -61,7 +63,7 @@ import getDetailsDocument from '../firebase/firebase-get';
 import { ref } from 'vue'
 const linksList = [
   {
-    title: 'Grammar Checker',
+    title: 'Dashboard',
     icon: 'subtitles',
     link: 'dashboard',
     crumbs: [
@@ -69,28 +71,28 @@ const linksList = [
       {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
     ]
   },
+  // {
+  //   title: 'My Pet',
+  //   icon: 'history',
+  //   link: 'history',
+  //   crumbs: [
+  //     {label: '', icon: 'home', link: '/'},
+  //     {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
+  //   ]
+  // },
+  // {
+  //   title: 'My Schedule',
+  //   icon: 'sticky_note_2',
+  //   link: 'note',
+  //   crumbs: [
+  //     {label: '', icon: 'home', link: '/'},
+  //     {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
+  //   ]
+  // },
   {
     title: 'History',
-    icon: 'history',
-    link: 'history',
-    crumbs: [
-      {label: '', icon: 'home', link: '/'},
-      {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
-    ]
-  },
-  {
-    title: 'Notes',
     icon: 'sticky_note_2',
     link: 'note',
-    crumbs: [
-      {label: '', icon: 'home', link: '/'},
-      {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
-    ]
-  },
-  {
-    title: 'Recyled',
-    icon: 'auto_delete',
-    link: 'recycle',
     crumbs: [
       {label: '', icon: 'home', link: '/'},
       {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
@@ -167,3 +169,9 @@ export default {
 
 }
 </script>
+
+<style scoped>
+.sidebarStyle {
+  border-radius: 20px 20px 10px 10px;
+}
+</style>

@@ -1,330 +1,472 @@
 <template>
-    <div class="row">
-        <div class="col-12 col-xs-12 col-sm-12 col-md-12 q-pa-sm">
+    <div class="row q-pa-md">
+        <div class="col-12 col-xs-12 col-sm-12 col-md-12 q-mb-md">
             <span class="text-h4 text-bold">Dashboard</span>
             <q-separator />
         </div>
-        <!-- Users Count Overview -->
-        <div class="col-12 col-xs-12 col-sm-12 col-md-8 q-pa-sm">
-            <q-card
-                flat
-                class="my-card bg-white"
+        <div class="col col-xs-12 col-sm-12 col-md-12">
+            <div 
+                v-if="scheduleList.length === 0" 
+                class="text-center"
             >
-                <q-card-section>
-                    <span class="text-h6 text-bold">User's Overview</span><br/>
-                    <span class="text-caption text-grey">User count & Subscription summary</span><br/>
+                <q-img
+                    width="15%"
+                    class="singleImgOpcity q-mr-sm"
+                    src="/imgs/icons/schedule-cal.png"
+                />
+                <span class="text-h6 text-grey-8">No Schedule Found!</span><br/>
+                <span class="text-caption text-grey-8">
+                    Looks like you dont have added your pets schedule.
+                </span>
+            </div>
+
+            <q-card
+                v-for="(item, key) in scheduleList"
+                class="my-card-schedule shadow-5 q-mb-md"
+                @click="openSchedModal(item)"
+                :key="key"
+            >
+                <q-card-section class="">
+                    <q-icon  name="vaccines" size="md" color="primary" /> 
+                    <label class="text-h6 q-ml-sm">{{`${item.pet.label}'s ${item.reasonOfVisit}`}}</label><br/><br/>
+                    <q-icon name="schedule" size="xs" color="primary" />
+                    <span class="text-caption q-ml-sm" >
+                    {{moment(`${item.scheduleDate} ${item.scheduleTime}`).format('LT')}} - {{moment(item.scheduleDate).format('dddd LL')}}
+                    </span>
+                </q-card-section>
+            </q-card>
+        </div>
+
+        <q-dialog
+            v-model="openScheduleForm"
+        >
+            <q-card style="width: 90vw; max-width: 90vw; border-radius: 20px;">
+                <q-tabs
+                    v-model="schedTab"
+                    class="text-primary"
+                    inline-label
+                >
+                    <q-tab name="details" icon="info_outline" label="Checkup Details" />
+                    <q-tab name="history" icon="history" label="Pet History" />
+                </q-tabs>
+                <q-tab-panels v-model="schedTab" animated>
+                    <q-tab-panel name="details">
+                        <q-card-section class="q-pt-none">
+                            <div class="text-h6 q-mt-sm">
+                                Pet Details
+                                <q-separator />
+                            </div>
+                                
+                            <div class="row">
+                                <!-- Details Part -->
+                                <div class="col-6 col-md-6 q-pa-xs">
+                                <label class="text-bold text-h6"> Name: {{selectSched.pet.label}}</label>
+                                </div>
+                                <div class="col-6 col-md-6 q-pa-xs">
+                                <label class="text-bold text-h6"> Breed: {{selectSched.details.breed}}</label>
+                                </div>
+                                <div class="col-6 col-md-6 q-pa-xs">
+                                <label class="text-bold text-h6"> Birth Date: <q-icon name="today" size="xs" color="primary" /> {{selectSched.details.dateOfBirth}}</label>
+                                </div>
+                                <div class="col-6 col-md-6 q-pa-xs">
+                                    <label class="text-bold text-h6"> 
+                                    Gender:
+                                    <q-icon 
+                                        :name="selectSched.details.gender === 'Male' ? 'male' : 'female'" 
+                                        size="xs" 
+                                        :color="selectSched.details.gender === 'Male' ? 'primary' : 'red'" 
+                                    /> 
+                                    {{selectSched.details.gender}}
+                                </label>
+                                </div>
+                                <div class="col-6 col-md-6 q-pa-xs">
+                                <label class="text-bold text-h6"> Weigth: <q-icon name="scale" size="xs" color="primary" /> {{selectSched.details.weight}}</label>
+                                </div>
+                                
+                            </div>
+                            <div class="text-h6 q-mt-sm">
+                                Schedule Details
+                                <q-separator />
+                            </div>
+                            <div class="row">
+                                <!-- Details Part -->
+                                <div class="col-12 col-md-12 q-pa-xs">
+                                <label class="text-h6  text-blue-grey-10"> <span class="text-bold  text-black">Reason of Visit:</span> {{selectSched.reasonOfVisit || "N/A"}}</label>
+                                </div>
+                                <div class="col-12 col-md-12 q-pa-xs">
+                                <label class="text-h6 text-blue-grey-10"> <span class="text-bold text-black">Remarks:</span> {{selectSched.remarks || "N/A"}}</label>
+                                </div>
+                                
+                                
+                            </div>
+                            <div class="text-h6 q-mt-sm">Checkup Details</div>
+                            <div class="row">
+                                <!-- Doctor Fill Up -->
+                                <q-input
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.weight" 
+                                    outlined 
+                                    label="Current Weight" 
+                                    class="col-6 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.heartRate" 
+                                    outlined 
+                                    label="Heart Rate" 
+                                    class="col-6 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.respiratory" 
+                                    outlined 
+                                    label="Respiratory" 
+                                    class="col-6 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.temperature" 
+                                    outlined 
+                                    label="Temperature" 
+                                    class="col-6 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    type="textarea" 
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.history" 
+                                    outlined 
+                                    label="History" 
+                                    class="col-12 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    type="textarea" 
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.findings" 
+                                    outlined 
+                                    label="Findings" 
+                                    class="col-12 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    type="textarea" 
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.diagnosis" 
+                                    outlined 
+                                    label="Diagnosis" 
+                                    class="col-12 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    type="textarea" 
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.treatment" 
+                                    outlined 
+                                    label="Treatment" 
+                                    class="col-12 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    type="textarea" 
+                                    dense 
+                                    v-model="selectSched.checkUpDetails.recommendation" 
+                                    outlined 
+                                    label="Recommendation" 
+                                    class="col-12 col-md-6 q-pa-xs" 
+                                />
+                            </div>
+                        </q-card-section>
+
+                        <q-card-actions align="right" class="bg-white text-teal">
+                            <q-btn color="red" flat label="Cancel" @click="closeSchedForm" />
+                            <q-btn color="deep-purple" flat label="Submit" @click="sendToCashier" />
+                        </q-card-actions>
+                    </q-tab-panel>
+                    <q-tab-panel name="history">
+                        <q-card-section class="q-pt-none">
+                            <q-timeline layout="dense" color="primary">
+                                <q-timeline-entry
+                                    v-for="(item, key) in historyList"
+                                    :title="item.reasonOfVisit"
+                                    :subtitle="item.scheduleDate"
+                                    side="left"
+                                    :key="key"
+                                    :color="item.status == 'done' ? 'green' : ''"
+                                    :icon="item.status == 'done' ? 'done_all' : 'pending_actions'"
+                                >
+                                    <div>
+                                        {{item.recommendation}}
+                                    </div>
+                                </q-timeline-entry>
+                            </q-timeline>
+                        </q-card-section>
+                    </q-tab-panel>
+                </q-tab-panels>
+                
+            </q-card>
+        </q-dialog>
+
+        <q-dialog
+            v-model="openPaymentForm"
+        >
+            <q-card style="width: 90vw; max-width: 90vw; border-radius: 20px;">
+                <q-card-section class="q-pt-none">
+                    <div class="text-h6 q-mt-sm">
+                        Pet Details
+                        <q-separator />
+                    </div>
 
                     <div class="row">
-                        <div
-                            v-for="(item, idx) in overviewList"
-                            :key="idx"
-                            class="col-3 col-xs-12 col-sm-3 col-md-3 q-pa-xs"
-                        >
-                            <q-card
-                                flat
-                                class="my-card-item "
-                                :class="item.color"
-                            >
-
-                                <q-card-section>
-                                    <q-avatar
-                                        size="md"
-                                        :color="item.iconBg"
-                                        text-color="white"
-                                        :icon="item.icon"
-                                    />
-                                    <br/>
-                                    <span class="text-bold text-h6 text-blue-grey-9" >{{item.count}}</span>
-                                    <br/>
-                                    <span class="text-subtitle text-blue-grey-9" >{{item.label}}</span>
-                                    <br/>
-                                    <span class="text-caption ellipsis" :class="item.captionColor" >{{item.captions}}</span>
-                                </q-card-section>
-                            </q-card>
+                        <!-- Details Part -->
+                        <div class="col-6 col-md-6 q-pa-xs">
+                        <label class="text-bold text-h6"> Name: {{selectSched.pet.label}}</label>
                         </div>
+                        <div class="col-6 col-md-6 q-pa-xs">
+                        <label class="text-bold text-h6"> Breed: {{selectSched.details.breed}}</label>
+                        </div>
+                        <div class="col-6 col-md-6 q-pa-xs">
+                        <label class="text-bold text-h6"> Birth Date: <q-icon name="today" size="xs" color="primary" /> {{selectSched.details.dateOfBirth}}</label>
+                        </div>
+                        <div class="col-6 col-md-6 q-pa-xs">
+                            <label class="text-bold text-h6"> 
+                            Gender:
+                            <q-icon 
+                                :name="selectSched.details.gender === 'Male' ? 'male' : 'female'" 
+                                size="xs" 
+                                :color="selectSched.details.gender === 'Male' ? 'primary' : 'red'" 
+                            /> 
+                            {{selectSched.details.gender}}
+                        </label>
+                        </div>
+                        <div class="col-6 col-md-6 q-pa-xs">
+                        <label class="text-bold text-h6"> Weigth: <q-icon name="scale" size="xs" color="primary" /> {{selectSched.details.weight}}</label>
+                        </div>
+
                     </div>
-                </q-card-section>
-            </q-card>
-        </div>
-        <!-- Undecided card -->
-        <div class="col-12 col-xs-12 col-sm-12 col-md-4 q-pa-sm">
-            <q-card
-                flat
-                class="my-card bg-white"
-                style="height: 231px; max-height: 231px;"
-            >
-                <q-card-section>
-                    <span class="text-h6 text-bold">User's Character Consumptions</span><br/>
-                    <span class="text-caption text-grey">Top Users</span><br/>
+                    <div class="text-h6 q-mt-sm">
+                        Schedule Details
+                        <q-separator />
+                    </div>
+                    <div class="row">
+                        <!-- Details Part -->
+                        <div class="col-12 col-md-12 q-pa-xs">
+                        <label class="text-h6  text-blue-grey-10"> <span class="text-bold  text-black">Reason of Visit:</span> {{selectSched.reasonOfVisit || "N/A"}}</label>
+                        </div>
+                        <div class="col-12 col-md-12 q-pa-xs">
+                        <label class="text-h6 text-blue-grey-10"> <span class="text-bold text-black">Remarks:</span> {{selectSched.remarks || "N/A"}}</label>
+                        </div>
 
-                    <q-list bordered>
-                        <q-item v-for="contact in offline" :key="contact.id" clickable v-ripple>
-                            <q-item-section avatar>
-                                <q-avatar size="md">
-                                    <img src="https://cdn.quasar.dev/img/boy-avatar.png">
-                                </q-avatar>
-                            </q-item-section>
 
-                            <q-item-section>
-                                <q-item-label>{{ contact.name }}</q-item-label>
-                                <q-linear-progress :value="contact.wordUsed" color="warning" class="q-mt-sm" />
-
-                            </q-item-section>
-
-                            <q-item-section side>
-                                <span class="text-overline">{{`${contact.wordCount} / ${contact.wordLimit}`}}</span>
-                            </q-item-section>
-                        </q-item>
-                    </q-list>
-                </q-card-section>
-            </q-card>
-        </div>
-
-        <!-- Table List of Users Subscribed on App -->
-        <div class="col-12 col-xs-12 col-sm-12 col-md-12 q-pa-sm">
-            <!-- Table -->
-            <q-card
-                flat
-                class="my-card bg-white"
-            >
-                <q-card-section>
-                    <q-table
-                        flat bordered
-                        title="Patient Schedule"
-                        :rows="rows"
-                        :columns="columns"
-                        row-key="name"
-                        :filter="filter"
-                        :selected-rows-label="getSelectedString"
-                        selection="multiple"
-                        v-model:selected="selected"
+                    </div>
+                    <q-stepper
+                        v-model="step"
+                        ref="stepper"
+                        color="primary"
+                        animated
+                        class="shadow-0 q-mt-md"
                     >
-                        <template v-slot:top-right>
-                            <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
-                            <template v-slot:append>
-                                <q-icon name="search" />
-                            </template>
-                            </q-input>
-                        </template>
-                        <template v-slot:body-cell-action="props">
-                            <q-td :props="props">
-                               <q-btn flat round color="black" icon="more_vert">
-                                    <q-menu>
-                                        <q-list style="min-width: 100px">
-                                            <q-item clickable @click="openExtendLimit(props.row.id)" v-close-popup>
-                                              <q-item-section>Extend Subscription</q-item-section>
-                                            </q-item>
-                                            <q-item
-                                                v-if="props.row.topUpActive"
-                                                clickable
-                                                @click="cancelExtend(props.row.id)"
-                                                v-close-popup
-                                            >
-                                              <q-item-section>Cancel Extension</q-item-section>
-                                            </q-item>
-                                            <q-item clickable @click="openAdjustLimit(props.row.id)" v-close-popup>
-                                              <q-item-section>Adjust Count Balance</q-item-section>
-                                            </q-item>
-                                            <q-item clickable @click="fetchListOfAdminLogs(props.row.id, 'admin-action')" v-close-popup>
-                                              <q-item-section>Admin Logs</q-item-section>
-                                            </q-item>
-                                            <q-item clickable @click="fetchListOfAdminLogs(props.row.id, 'transaction')" v-close-popup>
-                                              <q-item-section>Subscription Logs</q-item-section>
-                                            </q-item>
-                                        </q-list>
-                                    </q-menu>
-                               </q-btn>
-                            </q-td>
-                        </template>
-                    </q-table>
+                        <q-step
+                            :name="1"
+                            title="Payment"
+                            icon="settings"
+                            :done="step > 1"
+                        >
+                            <div class="row">
+                                <!-- Doctor Fill Up -->
+                                <q-input
+                                    dense 
+                                    v-model="transacForm.details.amount" 
+                                    outlined
+                                    label="Amount" 
+                                    class="col-6 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    dense 
+                                    v-model="transacForm.details.cashOnhand" 
+                                    outlined 
+                                    label="Cash On Hand" 
+                                    class="col-6 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    dense 
+                                    v-model="transacForm.details.change" 
+                                    disable
+                                    outlined 
+                                    label="Change" 
+                                    class="col-6 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    dense 
+                                    v-model="transacForm.details.invoiceNumber" 
+                                    outlined 
+                                    label="Invoice Number" 
+                                    class="col-6 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    type="textarea" 
+                                    dense 
+                                    v-model="transacForm.details.billItems" 
+                                    outlined 
+                                    label="Item Prescription" 
+                                    class="col-12 col-md-6 q-pa-xs" 
+                                />
+                            </div>
+                        </q-step>
+                        <q-step
+                            :name="2"
+                            title="Schedule"
+                            icon="settings"
+                            :done="step > 2"
+                        >
+                            <div class="row">
+                                <q-select
+                                    class="col-12 col-md-6 q-pa-xs"
+                                    v-model="transacForm.newSchedule.reasonOfVisit"
+                                    :options="schedTypeOpt"
+                                    label="Reason of visit"
+                                    dense
+                                    outlined
+                                    :options-dense="true"
+                                />
+                                <q-input
+                                    type="date" 
+                                    dense 
+                                    v-model="transacForm.newSchedule.scheduleDate" 
+                                    outlined 
+                                    label="Date" 
+                                    class="col-12 col-md-6 q-pa-xs" 
+                                />
+                                <q-input
+                                    type="textarea" 
+                                    dense 
+                                    v-model="transacForm.newSchedule.remarks" 
+                                    outlined 
+                                    label="Remarks / Complains" 
+                                    class="col-12 col-md-6 q-pa-xs" 
+                                />
+                            </div>
+                        </q-step>
+                    </q-stepper>
                 </q-card-section>
-            </q-card>
-        </div>
-
-        <!-- Adjust dialog -->
-        <q-dialog v-model="openAdjust" persistent>
-            <q-card style="min-width: 350px">
-                <q-card-section>
-                <div class="text-h6">Adjust Character Cound Limit</div>
-                </q-card-section>
-
-                <q-card-section class="q-pt-none">
-                    <q-input dense v-model="adjustedLimit" autofocus />
-                </q-card-section>
-
-                <q-card-actions align="right" class="text-primary">
-                    <q-btn flat label="Cancel" v-close-popup />
-                    <q-btn flat label="Confirm" @click="adjustUserLimit" />
+                <q-card-actions align="right" class="bg-white text-teal">
+                    <q-btn color="red" flat label="Cancel" @click="closePaymentForm" />
+                    <q-space />
+                    <q-btn
+                        v-if="step < 2" 
+                        @click="$refs.stepper.next()"
+                        color="primary"
+                        label="Continue"
+                    />
+                    <q-btn
+                        v-if="step > 1"
+                        flat color="primary"
+                        @click="$refs.stepper.previous()"
+                        label="Back"
+                        class="q-ml-sm"
+                    />
+                    <q-btn v-if="step === 2" color="deep-purple" flat label="Submit" @click="completeTransaction" />
                 </q-card-actions>
             </q-card>
         </q-dialog>
-        <q-dialog v-model="openExtend" persistent>
-            <q-card style="min-width: 350px">
-                <q-card-section>
-                <div class="text-h6">Extend users limit?</div>
-                </q-card-section>
-                <q-card-section class="q-pt-none">
-                    <q-input dense v-model="adjustedUsed" label="Limit" autofocus />
-                </q-card-section>
-                <q-card-actions align="right" class="text-primary">
-                    <q-btn flat label="Cancel" v-close-popup />
-                    <q-btn flat label="Confirm" @click="adjustUserLimitUsed" />
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
-
-      <q-dialog v-model="openLogs">
-        <q-layout view="Lhh lpR fff"  container class="bg-white text-dark">
-          <q-header class="bg-primary">
-            <q-toolbar>
-              <q-toolbar-title>Action Log Details</q-toolbar-title>
-              <q-btn flat v-close-popup round dense icon="close" />
-            </q-toolbar>
-          </q-header>
-
-          <q-page-container >
-            <q-page padding>
-              <!-- timeline -->
-              <div v-if="logDetails.length >= 1">
-                <q-timeline color="secondary">
-                  <q-timeline-entry
-                    v-for="(item, key) in logDetails"
-                    :key="key"
-                    :title="item.id"
-                    :subtitle="moment(item.timeStamp).format('YYYY-MM-DD h:s A')"
-                    color="primary"
-                    :icon="item.type === 'internal' ? 'ads_click' : 'credit_card'"
-                    :body="item.actionTaken"
-                  />
-                </q-timeline>
-              </div>
-
-            </q-page>
-          </q-page-container>
-        </q-layout>
-      </q-dialog>
-
     </div>
 </template>
 
 <script>
 import moment from 'moment';
 import getDashboardDetails from '../../firebase/firebase-dashboard';
+import getPetDetails from '../../firebase/firebase-get-pet-details';
+import getQueryWithFilter from '../../firebase/firebase-query';
 import updateDocument from '../../firebase/firebase-update';
 import createDocument from '../../firebase/firebase-create';
-import getDetailsDocument from '../../firebase/firebase-get';
-import getQueryWithFilter from '../../firebase/firebase-query';
 
 export default {
     name: 'PageAdminDashboard',
     data: () => {
         return {
-            // dialog controls
-            openExtend: false,
-            openAdjust: false,
-            openLogs: false,
-            selectedId: null,
-            adjustedLimit: 0,
-            adjustedUsed: 0,
-            logDetails: [],
+            userData: {},
+            openScheduleForm: false,
+            schedTab: "details",
+            scheduleList: [],
+            historyList: [],
+            selectSched: {
+                pet: {
+                    label:"",
+                    value:"",
+                },
+                title: "",
+                type: "",
+                scheduleDate: "",
+                scheduleTime: "",
+                remarks: "",
 
-            filter: "",
-            filterUnsub: "",
-            rows: [],
-            rowsUnsubs: [],
-            selected: [],
-            offline: [
-                {
-                    id: 5,
-                    name: 'Brunhilde Panswick',
-                    email: 'bpanswick4@csmonitor.com',
-                    wordUsed: 0.7,
-                    wordLimit: 50000,
-                    wordCount: 35000
-                }, {
-                    id: 6,
-                    name: 'Winfield Stapforth',
-                    email: 'wstapforth5@pcworld.com',
-                    wordUsed: 0.5,
-                    wordLimit: 50000,
-                    wordCount: 25000
-                }, {
-                    id: 7,
-                    name: 'Winfield DFFStapforth',
-                    email: 'wstapforth5@pcworld.com',
-                    wordUsed: 0.4,
-                    wordLimit: 50000,
-                    wordCount: 20000
+                // Doc fil form
+                checkUpDetails:{
+                    weight: "",
+                    heartRate: "",
+                    respiratory: "",
+                    temperature: "",
+                    currMonthAge: "",
+                    history: "",
+                    findings: "",
+                    diagnosis: "",
+                    treatment: "",
+                    recommendation: ""
                 }
-            ],
-            overviewList: [
-                {
-                    color: 'bg-red-2',
-                    icon: 'people',
-                    iconBg: 'red-5',
-                    count: '0',
-                    label: 'Users',
-                    captions: 'All registered user in the app',
-                    captionColor: 'text-blue-14',
+            },
+
+            // Cashier
+            step: 1,
+            schedTypeOpt: ["Vaccine", "Checkup", "Followup", "Deworm", "Grooming", "Consultation"],
+            openPaymentForm: false,
+            transacForm: {
+                newSchedule:{
+                    pet: "",
+                    reasonOfVisit: "", //Vaccine, Checkup, Followup, Deworm, Consultation
+                    scheduleDate: "",
+                    remarks: "",
+                    status: "pending",
                 },
-                {
-                    color: 'bg-green-2',
-                    icon: 'verified',
-                    iconBg: 'green-5',
-                    count: '0',
-                    label: 'Subscribed',
-                    captions: 'All user subcribed in the app',
-                    captionColor: 'text-blue-14',
-                },
-                {
-                    color: 'bg-orange-2',
-                    icon: 'paid',
-                    iconBg: 'orange-5',
-                    count: '$ 0.00',
-                    label: 'Total Sales',
-                    captions: 'Subscription and Top-ups',
-                    captionColor: 'text-blue-14',
-                },
-                {
-                    color: 'bg-brown-2',
-                    icon: 'credit_card',
-                    iconBg: 'brown-5',
-                    count: '$ 0.00',
-                    label: 'Todays Sales',
-                    captions: 'Today Subs. and Top-ups',
-                    captionColor: 'text-blue-14',
-                },
-            ]
+                details: {
+                    amount: 0,
+                    invoiceNumber: "",
+                    cashOnhand: 0,
+                    change: 0,
+                    billItems: ""
+                }
+            },
+
         }
     },
     created(){
+        this.getUserDetails()
         this.fetchSearchList();
     },
     methods:{
-      moment,
-      async fetchListOfAdminLogs(id, document){
-        try {
-          const res = await getQueryWithFilter(`audit-logs/${id}/${document}`)
-          this.logDetails = res;
-
-          this.openLogs = true
-          console.log(res)
-        } catch (error) {
-          this.$q.notify({
-            message: 'Error on fetching list',
-            color: 'negative',
-          });
-        }
-      },
+        moment,
+        async getUserDetails(){
+            try {
+                const user = LocalStorage.getItem('user')
+                const userId = user ? user.uid : null
+                const res = await getDetailsDocument(`userProfile`, userId)
+                this.userData = res
+            } catch (error) {
+                this.$q.notify({
+                message: 'Error on fetching data',
+                color: 'negative',
+                });
+            }
+        },
+        closeSchedForm(){
+            this.openScheduleForm = false
+        },
+        closePaymentForm(){
+            this.openPaymentForm = false
+        },
         async fetchSearchList(){
             try {
-                const res = await getDashboardDetails()
-
-                this.overviewList[0].count = res.overView.allUsers
-                this.overviewList[1].count = res.overView.subscribed
-                // table
-                this.rows = res.subscribedList
-                this.rowsUnsubs = res.notSubscribeList
+                let payload = {
+                    currDate: moment().format('YYYY-MM-DD'),
+                    scheduleStatus: this.userData.userType == 'admin' ? "pending" : "payment"
+                }
+                await getDashboardDetails(payload).then((res) => {
+                    this.scheduleList = res.schedList
+                })
             } catch (error) {
                 this.$q.notify({
                 message: 'Error on fetching list',
@@ -332,71 +474,28 @@ export default {
                 });
             }
         },
-        // Global Create Docs
-        async insertAuditLog(document, data, id){
-          createDocument(`audit-logs/${id}/${document}`, data);
+        async openSchedModal(data){
+            const usrType = this.userData.userType;
+            const res = await getPetDetails(`userPets/${data.ownerId}/list`, data.pet.value)
+            const history = await getQueryWithFilter(`petSchedule/${data.ownerId}/list`, "pet", data.pet)
+            this.selectSched.details = res
+            this.historyList = history
+            if(usrType === "admin"){
+                this.openScheduleForm = true
+            } else {
+                this.transacForm.newSchedule.pet = data.pet
+                this.transacForm.newSchedule.ownerId = data.ownerId
+                this.transacForm.details.billItems = data.recommendation
+                this.openPaymentForm = true
+            }
+            
+            this.selectSched = {...this.selectSched, ...data}
         },
-        manualyPaid(id){
+        sendToCashier(){
+            // Confirm
             this.$q.dialog({
-                title: 'Manually Paid Subscribed',
-                message: 'Would you like to take this action to manually paid the user?',
-                ok: {
-                    label: 'Yes'
-                },
-                cancel: {
-                    label: 'No',
-                    color: 'negative'
-                },
-                persistent: true
-            }).onOk(() => {
-                try {
-                    let payload = {
-                        isSubscribed: true,
-                        limitUsed: 0,
-                        limit: 50000,
-                        topUpUsed: 0,
-                        topUpLimit: 0,
-                        topUpActive: false,
-                        topUpDate: '',
-                        subscribeDate: moment().format()
-                    }
-                    // update the users
-                    updateDocument(`userProfile`, id, payload)
-
-                    // Logs
-                    const dataToSave = {
-                      actionTaken: "Manually subscribe user because of error issue on payment process",
-                      timeStamp: moment().format(),
-                      type: "internal",
-                      snapShot: {
-                        response: payload
-                      }
-                    };
-                    this.insertAuditLog("admin-action", dataToSave, id)
-
-                    this.fetchSearchList()
-                } catch (error) {
-                    this.$q.notify({
-                        message: 'Error saving data',
-                        color: 'negative',
-                    });
-                }
-            })
-        },
-        openAdjustLimit(id){
-            this.selectedId = id;
-
-            this.openAdjust = true
-        },
-        openExtendLimit(id){
-            this.selectedId = id;
-
-            this.openExtend = true
-        },
-        async adjustUserLimit(){
-            this.$q.dialog({
-                title: 'Adjust User Limit',
-                message: 'Would you like to take this action?',
+                title: 'Submit Details',
+                message: 'Would you like to proceed this application to the next step?',
                 ok: {
                     label: 'Yes'
                 },
@@ -407,30 +506,15 @@ export default {
                 persistent: true
             }).onOk(async () => {
                 try {
-                    const res = await getDetailsDocument(`userProfile`, this.selectedId)
                     let payload = {
-                        limit: this.adjustedLimit,
-                        limitUsed: 0,
-                        totalLimitUsed: 0 - Number(res.topUpUsed),
-                        totalLimit: Number(this.adjustedLimit) + Number(res.topUpLimit)
+                        ...this.selectSched.checkUpDetails,
+                        oldWeight: this.selectSched.details.weight,
+                        status: "payment"
                     }
-                    // update the users
-                    updateDocument(`userProfile`, this.selectedId, payload)
+                    await updateDocument(`petSchedule/${this.selectSched.ownerId}/list`, this.selectSched.id, payload).then(() => {
+                        updateDocument(`userPets/${this.selectSched.ownerId}/list`, this.selectSched.pet.value, {weight: payload.weight})
+                    })
 
-                    // Logs
-                    const dataToSave = {
-                      actionTaken: `Adjust the users limit from ${res.limit} to ${this.adjustedLimit}`,
-                      timeStamp: moment().format(),
-                      type: "internal",
-                      snapShot: {
-                        response: payload
-                      }
-                    };
-                    this.insertAuditLog("admin-action", dataToSave, this.selectedId)
-
-
-                    this.openAdjust = false
-                    this.selectedId = null
                     this.fetchSearchList()
                 } catch (error) {
                     this.$q.notify({
@@ -439,12 +523,13 @@ export default {
                     });
                 }
             })
+            
         },
-
-        async adjustUserLimitUsed(){
+        completeTransaction(){
+            // Confirm
             this.$q.dialog({
-                title: 'Extend User Limit',
-                message: 'Would you like to take this action?',
+                title: 'Submit Details',
+                message: 'Would you like to proceed this application to the next step?',
                 ok: {
                     label: 'Yes'
                 },
@@ -455,30 +540,21 @@ export default {
                 persistent: true
             }).onOk(async () => {
                 try {
-                    const res = await getDetailsDocument(`userProfile`, this.selectedId)
                     let payload = {
-                        topUpActive: true,
-                        topUpLimit: this.adjustedUsed,
-                        topUpDate: moment().format(),
-                        totalLimit: Number(this.adjustedUsed) + Number(res.limit)
+                        ...this.transacForm.details,
+                        schedID: this.selectSched.id
                     }
-                    // update the users
-                    updateDocument(`userProfile`, this.selectedId, payload)
+                    // createDocument(`account-log/${userId}/notes`, payload);
+                    await createDocument(
+                        `transactions/${this.selectSched.ownerId}/list`, 
+                        payload
+                    ).then(() => {
+                        updateDocument(`petSchedule/${this.selectSched.ownerId}/list`, this.selectSched.id, { status: "done" })
+                        createDocument(`petSchedule/${this.selectSched.ownerId}/list`, {...this.transacForm.newSchedule});
+                    });
 
-                    // Logs
-                    const dataToSave = {
-                      actionTaken: `Extends the users limit to ${this.adjustedUsed}`,
-                      timeStamp: moment().format(),
-                      type: "internal",
-                      snapShot: {
-                        response: payload
-                      }
-                    };
-                    this.insertAuditLog("admin-action", dataToSave, this.selectedId)
-
-                    this.openExtend = false
-                    this.selectedId = null
                     this.fetchSearchList()
+                    this.closePaymentForm()
                 } catch (error) {
                     this.$q.notify({
                         message: 'Error saving data',
@@ -486,129 +562,8 @@ export default {
                     });
                 }
             })
-        },
-        async cancelExtend(id){
-            this.$q.dialog({
-                title: 'Cancel Extension',
-                message: 'Would you like to take this action?',
-                ok: {
-                    label: 'Yes'
-                },
-                cancel: {
-                    label: 'No',
-                    color: 'negative'
-                },
-                persistent: true
-            }).onOk(async () => {
-                try {
-                    const res = await getDetailsDocument(`userProfile`, id)
-                    let payload = {
-                        topUpActive: false,
-                        topUpLimit: 0,
-                        topUpUsed: 0,
-                        topUpDate: "",
-                        totalLimit: Number(res.limit),
-                        totalLimitUsed: Number(res.limitUsed),
-                    }
-                    // update the users
-                    updateDocument(`userProfile`, id, payload)
-
-                    // Logs
-                    const dataToSave = {
-                      actionTaken: `Cancel the extension`,
-                      timeStamp: moment().format(),
-                      type: "internal",
-                      snapShot: {
-                        response: payload
-                      }
-                    };
-                    this.insertAuditLog("admin-action", dataToSave, this.selectedId)
-
-                    this.fetchSearchList()
-                } catch (error) {
-                    this.$q.notify({
-                        message: 'Error saving data',
-                        color: 'negative',
-                    });
-                }
-            })
-        },
-    },
-    computed:{
-        columns(){
-            return  [
-                {
-                    name: 'name',
-                    required: true,
-                    label: 'Subscriber Name',
-                    align: 'left',
-                    field: row => row,
-                    format: val => `${val.firstName} ${val.lastName}`,
-                    sortable: true
-                },
-                {
-                    name: 'subscribeDate',
-                    required: true,
-                    label: 'Subscribe Date',
-                    align: 'left',
-                    field: row => row.subscribeDate,
-                    format: val => `${val}`,
-                    sortable: true
-                },
-                {
-                    name: 'subscribeType',
-                    required: true,
-                    label: 'Subscription Type',
-                    align: 'left',
-                    field: row => `${row.subscribeType}, ${row.topUpActive ? 'Top-up':''}`,
-                    format: val => `${val}`,
-                    sortable: true
-                },
-                {
-                    name: 'wordCount',
-                    required: true,
-                    label: 'Standard',
-                    align: 'left',
-                    field: row => row,
-                    format: val => `${val.limit}`,
-                    sortable: true
-                },
-                {
-                    name: 'wordCount',
-                    required: true,
-                    label: 'Top Up',
-                    align: 'left',
-                    field: row => row,
-                    format: val => `${val.topUpLimit}`,
-                    sortable: true
-                },
-                {
-                    name: 'wordCount',
-                    required: true,
-                    label: 'Total Generated Usage',
-                    align: 'left',
-                    field: row => row,
-                    format: val => `${val.totalLimitUsed}`,
-                    sortable: true
-                },
-                {
-                    name: 'wordCount',
-                    required: true,
-                    label: 'Character Balance',
-                    align: 'left',
-                    field: row => row,
-                    format: val => `${(val.totalLimit - val.totalLimitUsed)}`,
-                    sortable: true
-                },
-                {
-                    name: 'action',
-                    label: 'Action',
-                    align: 'left'
-                },
-
-            ]
         }
-    }
+    },
 }
 </script>
 
@@ -618,7 +573,18 @@ export default {
     box-shadow: 0px 0px 3px -2px !important;
 }
 .my-card-item{
-    border-radius: 10px;
+  border-radius: 20px;
+}
+.my-card-schedule{
+  background-image: url(/imgs/icons/paw.png);
+  background-position: 110% 6px;
+  border-radius: 13px;
+  background-size: 35%;
+  background-repeat: no-repeat;
+  background-color: antiquewhite;
+}
+.singleImgOpcity{
+  opacity: 0.4;
 }
 .generatedDash{
   color: white;

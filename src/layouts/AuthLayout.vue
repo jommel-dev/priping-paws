@@ -1,21 +1,13 @@
 <template>
   <q-layout view="lHh Lpr lff">
 
-    <q-drawer
+    <!-- <q-drawer
       v-model="drawer"
       show-if-above
       class="bg-deep-purple-7"
       :width="400"
       :breakpoint="400"
     >
-      <!-- <q-btn
-        size="xl"
-        color="white"
-        text-color="primary"
-        round
-        unelevated
-        class="drawerBtn drawerBtnImg"
-      /> -->
       <q-btn
         to="/"
         round
@@ -50,7 +42,7 @@
         />
       </div>
 
-    </q-drawer>
+    </q-drawer> -->
 
     <!-- content -->
     <q-page-container>
@@ -95,7 +87,7 @@ export default {
         }
     },
     async created () {
-        this.checkUserSession()
+        // this.checkUserSession()
     },
     methods: {
         checkUserSession () {

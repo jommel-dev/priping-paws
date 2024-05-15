@@ -2,9 +2,9 @@
     <div>
         <History />
     </div>
-  </template>
+</template>
   
-  <script>
+<script>
   import History from 'src/components/History/index.vue';
 
   export default {
@@ -13,4 +13,4 @@
     History
   },
 }
-  </script>
+</script>

@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-xl">
+  <q-page class="q-pa-sm">
     <q-btn
       to="/"
       rounded
@@ -9,16 +9,17 @@
       label="Back to Home"
       dense
       class="q-pl-md q-pr-md"
-    /><br/><br/>
+    /><br/>
     <q-stepper
       v-model="step"
       ref="stepper"
       color="primary"
       animated
+      class="shadow-0 q-mt-md"
     >
       <q-step
         :name="1"
-        title="Account Information"
+        title="Account"
         icon="settings"
         :done="step > 1"
       >
@@ -51,17 +52,79 @@
         </div>
       </q-step>
 
-      <q-step
+      <!-- <q-step
         :name="2"
         title="Pet Details"
         icon="mdi-dog"
         :done="step > 2"
       >
-
-      </q-step>
+        <div class="row">
+          <div class="col-12 q-pa-xs">
+            <span class="text-title">Pet Details</span>
+            <q-separator />
+          </div>
+          <div class="col-12 text-center q-pa-xs">
+            <q-tabs
+              v-model="petForm.type"
+              class="text-teal"
+            >
+              <q-tab class="q-pa-md" name="dog">
+                <q-img
+                  src="/imgs/icons/dog.png"
+                  spinner-color="white"
+                  fit
+                />
+              </q-tab>
+              <q-tab name="cat">
+                <q-img
+                  src="/imgs/icons/cat.png"
+                  spinner-color="white"
+                  fit
+                />
+              </q-tab>
+            </q-tabs>
+          </div>
+          <q-input dense v-model="petForm.petName" outlined label="Pet Name" name="Pet Name" class="col-12 col-md-6 q-pa-xs" />
+          <q-input dense v-model="petForm.weight" outlined  label="Weight" name="Weight" class="col-12 col-md-6 q-pa-xs" />
+          <q-input dense v-model="petForm.age" outlined  label="Age" name="Age" class="col-12 col-md-6 q-pa-xs" />
+          <q-input dense v-model="petForm.breed" outlined label="Breed" name="Breed" class="col-12 col-md-6 q-pa-xs" />
+          <q-btn class="col-12 q-pa-xs" color="primary" dense icon="add" label="Add Pet" @click="addPetDetails" />
+          <div class="col-12 q-pa-xs">
+            <q-table
+              grid
+              flat 
+              bordered
+              :rows="petList"
+              row-key="name"
+              hide-header
+            >
+              <template v-slot:item="props">
+                <div class="q-pa-xs col-xs-12 col-sm-3 col-md-2">
+                  <q-card flat bordered>
+                    <q-card-section class="text-center">
+                      <q-img
+                        :src="`/imgs/icons/${props.row.type}-item.png`"
+                        width="30%"
+                        fit
+                      />
+                      <strong>{{ props.row.petName }} ({{props.row.breed}})</strong> <br/>
+                      <q-separator class="q-mt-sm" />
+                      <div class="text-left">
+                        <strong>Age: {{ props.row.age }}</strong><br>
+                        <strong>Weight: {{ props.row.weight }}</strong>
+                      </div>
+                      
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </template>
+            </q-table>
+          </div>
+        </div>
+      </q-step> -->
 
       <q-step
-        :name="3"
+        :name="2"
         title="Summary"
         icon="mdi-monitor-eye"
       >
@@ -87,28 +150,20 @@
             <span class="text-title text-bold">{{ stepForm.address || "N/A" }}</span><br/>
             <span class="text-caption text-grey">Address</span>
           </div>
-
-
-          <div class="col-12 q-pa-xs">
-            <span class="text-title">Pet Details</span>
-            <q-separator />
-          </div>
-          <div class="col-12 q-pa-xs">
-            Coming Soon
-          </div>
         </div>
       </q-step>
 
       <template v-slot:navigation>
         <q-stepper-navigation>
           <q-btn
-            v-if="step < 3" @click="$refs.stepper.next()"
+            v-if="step < 2" 
+            @click="$refs.stepper.next()"
             :disabled="enableContinue"
             color="primary"
             label="Continue"
           />
           <q-btn
-            v-if="step === 3"
+            v-if="step === 2"
             @click="completeRegistration"
             color="primary"
             label="Submit"
@@ -130,7 +185,6 @@
 import moment from 'moment';
 import { defineComponent } from 'vue';
 import register from '../firebase/firebase-register';
-import createDocument from '../firebase/firebase-create';
 
 export default defineComponent({
   name: 'PageIndex',
@@ -153,18 +207,21 @@ export default defineComponent({
       },
       petForm: {
         petName: "",
-        age: ""
+        age: "",
+        breed: "",
+        weight: "",
+        type: "dog"
       },
       petList: []
     }
   },
   computed: {
     enableContinue(){
-      let res = true;
+      let res = false;
 
       if(this.step === 1){
         let checkItemVal = 0;
-        let unvalidate = "contactNumber,suffix,middleName"
+        let unvalidate = "contactNumber,suffix,middleName,address"
         for(const obj in this.stepForm){
           if(
             this.stepForm[obj] === "" &&
@@ -193,6 +250,7 @@ export default defineComponent({
     moment,
     async completeRegistration(){
       try {
+        this.stepForm.petList = this.petList
         register(this.stepForm).then((res) => {
           if(res){
             this.$router.push('/dashboard')
@@ -200,6 +258,16 @@ export default defineComponent({
         })
       } catch (error) {
         console.log(error)
+      }
+    },
+    addPetDetails(){
+      this.petList.push(this.petForm)
+      this.petForm = {
+        petName: "",
+        age: "",
+        breed: "",
+        weight: "",
+        type: "dog"
       }
     },
     validateConfirmPass(){
@@ -220,5 +288,23 @@ export default defineComponent({
 .my-card{
   border-radius: 15px;
   box-shadow: 0px 0px 3px -2px !important;
+}
+.formBG-normal{
+  background: url(/imgs/icons/paw.png) no-repeat;
+  background-position: 106% 100px;
+  background-color: white;
+  border-radius: 20px;
+}
+.formBG-dog{
+  background: url(/imgs/icons/dog.png) no-repeat;
+  background-position: 106% 100px;
+  background-color: white;
+  border-radius: 20px;
+}
+.formBG-cat{
+  background: url(/imgs/icons/cat.png) no-repeat;
+  background-position: 106% 115px;
+  background-color: white;
+  border-radius: 20px;
 }
 </style>

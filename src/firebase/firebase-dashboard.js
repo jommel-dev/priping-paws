@@ -1,45 +1,45 @@
 import { db } from './index.js'
-import { collection, query, where, getDocs   } from 'firebase/firestore'
+import getQuerySchedWithFilter from './firebase-query-schedule.js';
+import { collection, query, where, getDocs } from 'firebase/firestore'
 import { Loading, Notify } from 'quasar'
 
-const getDashboardDetails = async (collectionName, uid) => {
+const getDashboardDetails = async (data) => {
   return new Promise(async (resolve, reject) => {
     Loading.show()
 
     try {
-        let dasboardContent = {
-            overView: {
-                allUsers: 0,
-                subscribed: 0,
-                totalSales: 0,
-                todaySales: 0,
-            },
-            subscribedList: [],
-            notSubscribeList: []
-        }
 
         // Checking users
         const userProfilesRef = collection(db, "userProfile");
-        const userQ = query(userProfilesRef, where("userType", "==", "visitor"))
-        const usersDashboard = await getDocs(userQ).then((querySnapshot) => {
-            let userList = []
-            querySnapshot.forEach((doc) => {
-                userList.push({ id: doc.id, ...doc.data() })
-            })
+        const userQ = await query(userProfilesRef, where("userType", "==", "client"))
+        const usersDashboard = await getDocs(userQ).then(async (querySnapshot) => {
+          let userList = []
+          let schedList = []
 
-            dasboardContent.overView.allUsers = userList.length;
-            dasboardContent.overView.subscribed = userList.filter(el => { return el.isSubscribed }).length;
-            dasboardContent.subscribedList = userList.filter(el => { return el.isSubscribed });
-            dasboardContent.notSubscribeList = userList.filter(el => { return !el.isSubscribed });
+          querySnapshot.forEach(async (doc) => {
+            userList.push({ id: doc.id, ...doc.data() })
+          })
+
+          for (const doc in userList) {
+            let scheds = await getQuerySchedWithFilter(`petSchedule/${userList[doc].id}/list`, "status", data.scheduleStatus, "scheduleDate", data.currDate)
+            schedList.push(...scheds)
+          }
+          
+          return {
+            userList,
+            schedList
+          }
         })
+        
         Loading.hide()
-        resolve(dasboardContent)
+        resolve(usersDashboard)
     } catch (err) {
       Loading.hide()
       Notify.create({
         type: 'negative',
         message: err.message
       })
+      console.log(err)
       reject(err.message)
     }
   })

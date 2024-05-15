@@ -2,558 +2,440 @@
   <div class="q-pa-md" style="width: 100%;">
     <!-- Generate Text or Sentence Container -->
     <div class="row">
-      <div v-if="!subscribedUser" class="col col-sm-12 col-md-12 q-mb-md">
-        <!-- Subscribe Banner -->
-        <q-banner v-if="!subscribedUser" inline-actions rounded class="bg-orange-4 text-black">
-          In order to unlock the generate and other features, please subscribe <br/>
-          <span class="text-caption text-black"><i>Note: </i> This one time subscription and you can use it forever! </span>
-
-          <template v-slot:action>
-            <q-btn
-              color="black"
-              label="Subscribe"
-              class="q-ml-sm"
-              @click="initPaypal"
-            />
-          </template>
-        </q-banner>
+      <div class="col col-xs-12 col-sm-12 col-md-12 q-mb-sm">
+        <span class="text-h5">Hi <span class="text-bold">{{`${userData.firstName},`}}</span></span><br/>
+        <span class="text-caption text-grey-8">
+          Pets are just like your children; they make your life awesome.
+        </span>
+        <q-separator />
       </div>
-      <div v-if="subscribedUser && !isTopup" class="col col-sm-12 col-md-12 q-mb-md">
-        <!-- Limit of Reach Banner -->
-        <q-banner v-if="monthlyLimitValidate" inline-actions rounded class="bg-orange-4 text-black">
-          You reached you limit this month to continue, please top-up <br/>
-          <span class="text-caption text-black"><i>Note: </i> This is to add another limit characters can be generated</span>
-
-          <template v-slot:action>
-            <q-btn
-              color="black"
-              label="Top Up"
-              class="q-ml-sm"
-              @click="initPaypalTopUp"
-            />
-          </template>
-        </q-banner>
-      </div>
-      <div class="col col-md-3 q-pa-sm">
-        <!-- Subscription Details -->
-        <q-card flat class="my-card shadow-7">
-          <q-card-section>
-            <div class="text-h6">Subscription Details</div>
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            Subcribe Date: {{moment(userData.subscribeDate).format('MMMM Do YYYY') || '--'}}
-          </q-card-section>
-
-          <q-separator inset />
-
-          <q-card-section>
-            <q-list >
-                <q-item
-                  class="shadow-2 bg-white custom-item-border q-mb-md q-pa-md"
-                  v-ripple
-                >
-                  <q-item-section>
-                    <q-item-label caption style="font-size: 7pt;">Monthly</q-item-label>
-                    <q-item-label lines="2">Word Generated Limit</q-item-label>
-                    <q-item-label class="text-bold text-grey-9 text-h6" lines="2">{{`${userData.limitUsed || 0}/${userData.limit || 0}`}}</q-item-label>
-                  </q-item-section>
-                  <q-item-section avatar>
-                    <q-avatar rounded class="generatedIconDash" text-color="white" icon="g_translate" size="xl" />
-                  </q-item-section>
-                </q-item>
-
-                <q-item
-                  class="shadow-2 bg-white custom-item-border q-mb-sm q-pa-md"
-                  v-ripple
-                >
-                  <q-item-section>
-                    <!-- <q-item-label caption style="font-size: 7pt;">Some Info</q-item-label> -->
-                    <q-item-label lines="2">Top-Up Limit</q-item-label>
-                    <q-item-label class="text-bold text-grey-9 text-h6" lines="2">{{`${userData.topUpUsed || 0}/${userData.topUpLimit | 0}`}}</q-item-label>
-                  </q-item-section>
-                  <q-item-section avatar>
-                    <q-avatar rounded class="generatedIconDash" text-color="white" icon="add_shopping_cart" size="xl" />
-                  </q-item-section>
-                </q-item>
-
-            </q-list>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <div class="col col-sm-12 col-md-9 q-pa-sm">
-        <!-- Textarea for sentences -->
-        <q-card flat class="my-card shadow-7">
-          <q-card-section>
-            <q-input
-              outlined
-              bottom-slots
-              v-model="userInput"
-              placeholder="Enter Sentence Here"
-              maxlength="3000"
-              counter
-              dense
-              autogrow
-              rounded
-              type="textarea"
-            >
-              <template v-slot:prepend>
-                <q-icon v-if="!generateLoading" name="history_edu" />
-                <q-spinner-dots
-                  v-if="generateLoading"
-                  color="primary"
-                  size="1em"
-                />
-              </template>
-              <template v-slot:append>
-
-              </template>
-            </q-input>
-
-            <q-btn
-              @click="generateResponse"
-              rounded
-              textColor="white"
-              class="generatedIconDash"
-              label="Generate Response"
-              :disabled="!subscribedUser || (monthlyLimitValidate && !isTopup)"
-            />
-          </q-card-section>
-        </q-card>
-
-
-        <!-- Result Content -->
-        <q-card flat bordered class="q-mt-md">
-          <!-- Heading -->
-          <q-bar class="bg-primary text-white">
-            <q-icon name="tips_and_updates" />
-            <div>Generated Result</div>
-
-            <q-space />
-            <q-btn
-              :disabled="generatedText === null"
-              @click="copyToClipboard(generatedText)"
-              dense
+      <div class="col col-xs-12 col-sm-12 col-md-12 q-mb-sm">
+        <div class="row">
+          <div
+            v-for="(item, idx) in overviewList"
+            :key="idx"
+            class="col-3 col-xs-3 col-sm-3 col-md-3 q-pa-sm text-center"
+          >
+            <q-card
               flat
-              icon="content_copy"
+              class="my-card-item "
+              :class="item.color"
+              @click="item.action"
             >
-              <q-tooltip>Copy Text</q-tooltip>
-            </q-btn>
-          </q-bar>
-          <!-- Content -->
-          <q-card-section :class="generateLoading ? 'text-center' : ''">
-            <!-- Loader while API is generated -->
-            <q-spinner-ios
-              v-if="generateLoading"
-              color="primary"
-              size="4em"
-            />
-            <!-- Display the generated Text -->
-            <span v-if="!generateLoading" class="text-subtitle1">{{ generatedText }}</span>
+              <q-card-section class="text-center">
+                <q-avatar
+                    size="lg"
+                    :color="item.iconBg"
+                    text-color="white"
+                    :icon="item.icon"
+                />
+              </q-card-section>
+            </q-card>
+            <span class="text-bold">{{item.label}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="col col-xs-12 col-sm-12 col-md-12">
+        <div 
+          v-if="scheduleList.length === 0" 
+          class="text-center"
+        >
+          <q-img
+            width="15%"
+            class="singleImgOpcity q-mr-sm"
+            src="/imgs/icons/schedule-cal.png"
+          />
+          <span class="text-h6 text-grey-8">No Schedule Found!</span><br/>
+          <span class="text-caption text-grey-8">
+            Looks like you dont have added your pets schedule.
+          </span>
+        </div>
+
+        <q-card
+          v-for="(item, key) in scheduleList"
+          class="my-card-schedule shadow-5 q-mb-md"
+          :key="key"
+        >
+          <q-card-section class="">
+            <q-icon  name="vaccines" size="md" color="primary" /> 
+            <label class="text-h6 q-ml-sm">{{`${item.pet.label}'s ${item.title}`}}</label><br/><br/>
+            <q-icon name="schedule" size="xs" color="primary" />
+            <span class="text-caption q-ml-sm" >
+              {{moment(item.scheduleDate).format('dddd LL')}}
+            </span>
           </q-card-section>
-          <q-separator />
-          <q-card-actions>
-            <p class="q-mr-lg">Letters: <span class="text-bold">{{ letterCountForGeneratedText }}</span></p>
-            <p class="q-mr-lg">Words:  <span class="text-bold">{{ wordCountForGeneratedText }}</span></p>
-          </q-card-actions>
         </q-card>
+      </div>
+    </div>
+    <div class="row q-mt-md">
+      <div class="col col-xs-12 col-sm-12 col-md-12 q-mb-md">
+        <span class="text-h5 text-bold">My Pets</span>
+        <q-btn @click="openPetForm = true" class="float-right" size="md" flat round color="primary" icon="add_circle" />
+      </div>
+      <div class="col col-xs-12 col-sm-12 col-md-12 q-mb-md">
+        <q-tabs
+          v-model="petType"
+          class="text-teal"
+        >
+          <q-tab class="q-pa-md" name="dog">
+            <q-img
+              src="/imgs/icons/dog.png"
+              spinner-color="white"
+              fit
+            />
+          </q-tab>
+          <q-tab name="cat">
+            <q-img
+              src="/imgs/icons/cat.png"
+              spinner-color="white"
+              fit
+            />
+          </q-tab>
+        </q-tabs>
+        
+
+        <q-tab-panels v-model="petType" animated>
+          <q-tab-panel name="dog">
+            <q-card
+              v-for="(item, key) in filteredPetList"
+              class="shadow-5 q-mb-md"
+              :class="`formBG-${item.type}`"
+              :key="key"
+            >
+              <q-card-section class="">
+                <q-icon 
+                  :name="item.gender === 'Male' ? 'male' : 'female'" 
+                  size="md" 
+                  :color="item.gender === 'Male' ? 'primary' : 'red'" 
+                /> 
+                <label class="text-h6 q-ml-sm">{{item.petName}}</label><br/><br/>
+                
+                <span class="text-caption q-ml-sm" >
+                  <q-icon name="today" size="xs" color="primary" /> {{generateAge(item.dateOfBirth)}} / 
+                  <q-icon name="scale" size="xs" color="primary" /> {{item.weight}} / 
+                  <q-icon name="pets" size="xs" color="primary" /> {{item.breed}}
+                </span>
+              </q-card-section>
+            </q-card>
+            <div 
+              v-if="filteredPetList.length === 0" 
+              class="text-center q-pa-xl"
+            >
+              <q-img
+                width="50%"
+                class="singleImgOpcity"
+                src="/imgs/icons/pets.png"
+              /><br/>
+              <span class="text-h5 text-grey-8">Uh Oh!</span><br/>
+              <span class="text-caption text-grey-8">
+                Looks like you dont have added your pets yet.
+              </span>
+            </div>
+          </q-tab-panel>
+
+          <q-tab-panel name="cat">
+            <q-card
+              v-for="(item, key) in filteredPetList"
+              class="shadow-5 q-mb-md"
+              :class="`formBG-${item.type}`"
+              :key="key"
+            >
+              <q-card-section class="">
+                <q-icon 
+                  :name="item.gender === 'Male' ? 'male' : 'female'" 
+                  size="md" 
+                  :color="item.gender === 'Male' ? 'primary' : 'red'" 
+                /> 
+                <label class="text-h6 q-ml-sm">{{item.petName}}</label><br/><br/>
+                
+                <span class="text-caption q-ml-sm" >
+                  <q-icon name="today" size="xs" color="primary" /> {{generateAge(item.dateOfBirth)}} / 
+                  <q-icon name="scale" size="xs" color="primary" /> {{item.weight}} / 
+                  <q-icon name="pets" size="xs" color="primary" /> {{item.breed}}
+                </span>
+              </q-card-section>
+            </q-card>
+            <div 
+              v-if="filteredPetList.length === 0" 
+              class="text-center q-pa-xl"
+            >
+              <q-img
+                width="50%"
+                class="singleImgOpcity"
+                src="/imgs/icons/pets.png"
+              /><br/>
+              <span class="text-h5 text-grey-8">Uh Oh!</span><br/>
+              <span class="text-caption text-grey-8">
+                Looks like you dont have added your pets yet.
+              </span>
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
       </div>
 
     </div>
 
-    <!-- 1st step create dialog container -->
-    <q-dialog v-model="openHistory">
-      <!-- 2nd step create dialog card body -->
-      <q-card class="q-pa-md" style="max-width: 80vw; border-radius: 10px;">
-        <!-- 4th step content dialog body -->
-        <q-card-section>
-          Input: <span
-            class="text-bold cursor-pointer"
-            @click="copyToClipboard(selectedHistory.userInput)"
-          >{{selectedHistory.userInput}}</span> <br/>
 
-          Result: <span
-            class="text-subtitle1 cursor-pointer"
-            @click="copyToClipboard(selectedHistory.generatedText)"
-          >{{selectedHistory.generatedText}}</span>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-
-
-    <q-dialog v-model="openPaypal" persistent>
-      <!-- 2nd step create dialog card body -->
-      <q-card class="q-pa-md" style="width: 20vw;max-width: 60vw; border-radius: 10px;">
-        <q-toolbar>
-          <q-toolbar-title><span class="text-weight-bold">Pay Using</span></q-toolbar-title>
-
-          <q-btn flat round dense icon="close" v-close-popup />
-        </q-toolbar>
-        <!-- 4th step content dialog body -->
-        <q-card-section>
-          <!-- Loading -->
-          <div v-show="paypalLoad" >
-            <q-spinner-tail color="blue-grey" size="5.5em" />
+    <q-dialog
+      v-model="openPetForm"
+    >
+      <q-card style="width: 90vw; max-width: 90vw; border-radius: 20px;">
+        <q-card-section class="q-pt-none">
+          <div class="text-h6">Pet Details</div>
+          <div class="row">
+            <div class="col-12 text-center q-pa-xs">
+              <q-tabs
+                v-model="petForm.type"
+                class="text-teal"
+              >
+                <q-tab class="q-pa-md" name="dog">
+                  <q-img
+                    src="/imgs/icons/dog.png"
+                    spinner-color="white"
+                    fit
+                  />
+                </q-tab>
+                <q-tab name="cat">
+                  <q-img
+                    src="/imgs/icons/cat.png"
+                    spinner-color="white"
+                    fit
+                  />
+                </q-tab>
+              </q-tabs>
+            </div>
+            <q-input dense v-model="petForm.petName" outlined label="Pet Name" name="Pet Name" class="col-12 col-md-6 q-pa-xs" />
+            <q-input dense v-model="petForm.weight" outlined  label="Weight" name="Weight" class="col-12 col-md-6 q-pa-xs" />
+            <q-input type="date" dense v-model="petForm.dateOfBirth" outlined  label="Date Of Birth" name="dateOfBirth" class="col-12 col-md-6 q-pa-xs" />
+            <q-input dense v-model="petForm.breed" outlined label="Breed" name="Breed" class="col-12 col-md-6 q-pa-xs" />
+            <q-select
+              class="col-12 col-md-6 q-pa-xs"
+              v-model="petForm.gender"
+              :options="sexOption"
+              label="Gender"
+              dense
+              outlined
+              :options-dense="true"
+            />
+          
+            <q-btn class="col-12 q-pa-xs q-mt-sm" color="primary" dense icon="add" label="Add Pet" @click="addPetDetails" />
+            <div class="col-12 q-pa-xs">
+              <q-table
+                grid
+                flat 
+                bordered
+                :rows="petList"
+                row-key="name"
+                hide-header
+              >
+                <template v-slot:item="props">
+                  <div class="q-pa-xs col-xs-12 col-sm-3 col-md-2">
+                    <q-card flat bordered>
+                      <q-card-section class="text-center">
+                        <q-img
+                          :src="`/imgs/icons/${props.row.type}-item.png`"
+                          width="30%"
+                          fit
+                        />
+                        <strong>{{ props.row.petName }} ({{props.row.breed}})</strong> <br/>
+                        <q-separator class="q-mt-sm" />
+                        <div class="text-left">
+                          <strong>Age: {{ props.row.age }}</strong><br>
+                          <strong>Weight: {{ props.row.weight }}</strong>
+                        </div>
+                        
+                      </q-card-section>
+                    </q-card>
+                  </div>
+                </template>
+              </q-table>
+            </div>
           </div>
-          <!-- Button Content -->
-          <div v-show="!paypalLoad" id="paypal-btn"></div>
         </q-card-section>
+
+        <q-card-actions align="right" class="bg-white text-teal">
+          <q-btn color="red" flat label="Cancel" @click="closePetForm" />
+          <q-btn color="deep-purple" flat label="Submit" @click="saveToFirebase" />
+        </q-card-actions>
       </q-card>
     </q-dialog>
 
+
+    <q-dialog
+      v-model="openScheduleForm"
+    >
+      <q-card style="width: 90vw; max-width: 90vw; border-radius: 20px;">
+        <q-card-section class="q-pt-none">
+          <div class="text-h6 q-mt-sm">Pet Schedule Details</div>
+          <div class="row">
+            <q-select
+              class="col-12 col-md-6 q-pa-xs"
+              v-model="scheduleForm.pet"
+              :options="petsOption"
+              label="Pet To Schedule"
+              dense
+              outlined
+              :options-dense="true"
+            />
+            <q-select
+              class="col-12 col-md-6 q-pa-xs"
+              v-model="scheduleForm.reasonOfVisit"
+              :options="schedTypeOpt"
+              label="Reason of visit"
+              dense
+              outlined
+              :options-dense="true"
+            />
+            <q-input
+              type="date" 
+              dense 
+              v-model="scheduleForm.scheduleDate" 
+              outlined 
+              label="Date" 
+              class="col-12 col-md-6 q-pa-xs" 
+            />
+            <q-input
+              type="textarea" 
+              dense 
+              v-model="scheduleForm.remarks" 
+              outlined 
+              label="Remarks / Complains" 
+              class="col-12 col-md-6 q-pa-xs" 
+            />
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="bg-white text-teal">
+          <q-btn color="red" flat label="Cancel" @click="closeSchedForm" />
+          <q-btn color="deep-purple" flat label="Submit" @click="saveScheduleToFirebase" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
 import moment from 'moment'
-import ClipboardJS from 'clipboard';
 import createDocument from '../../firebase/firebase-create';
-import updateDocument from '../../firebase/firebase-update';
+import getQueryWithFilter from '../../firebase/firebase-query';
 import listDocuments from '../../firebase/firebase-list';
 import getDetailsDocument from '../../firebase/firebase-get';
-import captureOrder from '../../paypal/captureOrder';
-import createOrderPaypal from '../../paypal/createOrder';
-import createOrderTopUpPaypal from '../../paypal/createTopUpOrder';
 import { LocalStorage } from 'quasar';
-import { loadScript } from "@paypal/paypal-js";
 
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-//   dangerouslyAllowBrowser: true,
-// });
-
-// const clientID = process.env.PAYPAL_CLIENT_ID
 
 export default {
   name: 'DashboardNoteComponent',
   data() {
     return {
-      userInput: '',
-      generateLoading: false,
-      generatedText: null,
-      typedGeneratedText: '', // added for typewriter effect
-      inputHistory: [],
-      textHistory: [],
-      subsDetails: [],
-      openHistory: false,
-      openPaypal: false,
-      paypalLoad: false,
-      selectedHistory: {},
-      userData: {
-        isSubscribed: true,
-        topUpActive: true
-      }
+      scheduleList: [],
+      petListDog: [],
+      userData: {},
+
+      openScheduleForm: false,
+      schedTypeOpt: ["Vaccine", "Checkup", "Followup", "Deworm", "Grooming", "Consultation"],
+      scheduleForm: {
+        pet: "",
+        reasonOfVisit: "", //Vaccine, Checkup, Followup, Deworm, Consultation
+        scheduleDate: "",
+        remarks: "",
+        status: "pending"
+      },
+
+      openPetForm: false,
+      petForm: {
+        petName: "",
+        dateOfBirth: "",
+        breed: "",
+        weight: "",
+        gender: "",
+        type: "dog"
+      },
+      petList: [],
+      petType: "dog",
+      sexOption: ["Female", "Male"],
+      overviewList: [
+        {
+          color: 'bg-red-2',
+          icon: 'vaccines',
+          iconBg: 'red-5',
+          count: '0',
+          label: 'Health',
+          captions: 'All registered user in the app',
+          captionColor: 'text-blue-14',
+          action: () => { return false }
+        },
+        {
+          color: 'bg-green-2',
+          icon: 'event',
+          iconBg: 'green-5',
+          count: '0',
+          label: 'Schedule',
+          captions: 'All user subcribed in the app',
+          captionColor: 'text-blue-14',
+          action: () => { this.openScheduleForm = true }
+        },
+        {
+          color: 'bg-blue-2',
+          icon: 'history',
+          iconBg: 'blue-5',
+          count: '$ 0.00',
+          label: 'History',
+          captions: 'Today Subs. and Top-ups',
+          captionColor: 'text-blue-14',
+          action: () => { return false }
+        },
+        {
+          color: 'bg-orange-2',
+          icon: 'help_center',
+          iconBg: 'orange-5',
+          count: '$ 0.00',
+          label: 'Help',
+          captions: 'Subscription and Top-ups',
+          captionColor: 'text-blue-14',
+          action: () => { return false }
+        },
+      ]
     };
   },
   computed: {
-    subscribedUser(){
-      // for now
-      return this.userData.isSubscribed;
+    filteredPetList(){
+      let myPetList = [...this.petListDog]
+      return myPetList.filter(el => {
+        return el.type === this.petType
+      })
     },
-    monthlyLimitValidate(){
-      let validate = Number(this.userData.limitUsed) === Number(this.userData.limit) && Number(this.userData.limit) !== 0
-      return validate
-    },
-    isTopup(){
-      return this.userData.topUpActive;
-    },
-    letterCountForGeneratedText() {
-      return this.generatedText ? this.generatedText.replace(/[^A-Za-z]/g, '').length : 0;
-    },
-    wordCountForGeneratedText() {
-      const words = this.generatedText ? this.generatedText.split(/\s+/) : [];
-      return words.filter(word => word !== '').length;
-    },
+    petsOption(){
+      let myPetList = [...this.petListDog]
+      return myPetList.map(el => {
+        let obj = {
+          value: el.id,
+          label: el.petName,
+        }
+        return obj
+      })
+    }
   },
   created(){
-    // this.fetchSearchList()
     this.getUserDetails()
+    this.fetchSearchList()
+    this.fetchScheduleList()
   },
   methods: {
     moment,
-    // Global Create Docs
-    async insertAuditLog(document, data){
-      const user = LocalStorage.getItem('user')
-      const userId = user ? user.uid : null;
-
-      createDocument(`audit-logs/${userId}/${document}`, data);
-    },
-    // Paypal Integ
-    async initPaypal(){
-      let vm = this;
-      this.paypalLoad = true
-      // Open Modal
-      vm.openPaypal = true;
-      let paypalOpt = {
-         clientId: clientID
-      }
+    async fetchScheduleList(){
       try {
-        loadScript(paypalOpt)
-        .then((paypal) => {
-            this.paypalLoad = false
-            paypal
-                .Buttons({
-                  async createOrder(){
-                    const res = await createOrderPaypal()
-
-                    if (res.jsonResponse.id) {
-                      const dataToSave = {
-                        actionTaken: "Paypal create order Executed success",
-                        timeStamp: moment().format(),
-                        type: "subscription",
-                        snapShot: {
-                          response: res.jsonResponse
-                        }
-                      };
-                      vm.insertAuditLog("transaction", dataToSave);
-                      return res.jsonResponse.id;
-                    } else {
-                      const errorDetail = res.jsonResponse?.details?.[0];
-                      const errorMessage = errorDetail
-                        ? `${errorDetail.issue} ${errorDetail.description} (${res.jsonResponse.debug_id})`
-                        : JSON.stringify(res.jsonResponse);
-
-                      // Logs
-                      const dataToSave = {
-                        actionTaken: "Paypal create order Executed Error",
-                        timeStamp: moment().format(),
-                        type: "subscription",
-                        snapShot: {
-                          response: errorMessage
-                        }
-                      };
-                      vm.insertAuditLog("transaction", dataToSave);
-                      throw new Error(errorMessage);
-                    }
-                  },
-                  async onApprove(data){
-                    const res = await captureOrder(data.orderID)
-
-                    if(res.httpStatusCode >= 200 & res.httpStatusCode <= 299){
-                      // Save to Logs
-                      const dataToSave = {
-                        actionTaken: "Paypal order approve payment success",
-                        timeStamp: moment().format(),
-                        type: "subscription",
-                        snapShot: {
-                          response: res.jsonResponse
-                        }
-                      };
-                      vm.insertAuditLog("transaction", dataToSave);
-                      // Save and Update the users subscription
-                      vm.updateUserSubscription(res.jsonResponse)
-                      vm.openPaypal = false;
-                    } else {
-                      const dataToSave = {
-                        actionTaken: "Paypal order approve payment Error",
-                        timeStamp: moment().format(),
-                        type: "subscription",
-                        snapShot: {
-                          response: res.jsonResponse
-                        }
-                      };
-                      vm.insertAuditLog("transaction", dataToSave);
-                    }
-                  }
-                })
-                .render("#paypal-btn")
-                .catch((error) => {
-                    console.error("failed to render the PayPal Buttons", error);
-                });
-        })
-        .catch((error) => {
-            console.error("failed to load the PayPal JS SDK script", error);
-        });
+        const user = LocalStorage.getItem('user')
+        const userId = user ? user.uid : null
+        const res = await getQueryWithFilter(`petSchedule/${userId}/list`, 'status', 'pending')
+        console.log(res)
+        this.scheduleList = res
       } catch (error) {
         this.$q.notify({
-          message: 'Error on fetching data',
+          message: 'Error on fetching list',
           color: 'negative',
         });
       }
     },
-    async initPaypalTopUp(){
-      let vm = this;
-      this.paypalLoad = true
-      // Open Modal
-      vm.openPaypal = true;
-      let paypalOpt = {
-         clientId: clientID
-      }
-      try {
-        loadScript(paypalOpt)
-        .then((paypal) => {
-            this.paypalLoad = false
-            paypal
-                .Buttons({
-                  async createOrder(){
-                    const res = await createOrderTopUpPaypal()
-
-                    if (res.jsonResponse.id) {
-                      const dataToSave = {
-                        actionTaken: "Paypal create order Executed success",
-                        timeStamp: moment().format(),
-                        type: "top-up",
-                        snapShot: {
-                          response: res.jsonResponse
-                        }
-                      };
-                      vm.insertAuditLog("transaction", dataToSave);
-                      return res.jsonResponse.id;
-                    } else {
-                      const errorDetail = res.jsonResponse?.details?.[0];
-                      const errorMessage = errorDetail
-                        ? `${errorDetail.issue} ${errorDetail.description} (${res.jsonResponse.debug_id})`
-                        : JSON.stringify(res.jsonResponse);
-                      // Logs
-                      const dataToSave = {
-                        actionTaken: "Paypal create order Executed Error",
-                        timeStamp: moment().format(),
-                        type: "top-up",
-                        snapShot: {
-                          response: errorMessage
-                        }
-                      };
-                      vm.insertAuditLog("transaction", dataToSave);
-
-                      throw new Error(errorMessage);
-                    }
-                  },
-                  async onApprove(data){
-                    const res = await captureOrder(data.orderID)
-
-                    if(res.httpStatusCode >= 200 & res.httpStatusCode <= 299){
-                      // Save to Logs
-                      const dataToSave = {
-                        actionTaken: "Paypal order approve payment success",
-                        timeStamp: moment().format(),
-                        type: "top-up",
-                        snapShot: {
-                          response: res.jsonResponse
-                        }
-                      };
-                      vm.insertAuditLog("transaction", dataToSave);
-                      // Save and Update the users subscription
-                      vm.updateUserTopUp(res.jsonResponse)
-                      vm.openPaypal = false;
-                    } else {
-                      const dataToSave = {
-                        actionTaken: "Paypal order approve payment error",
-                        timeStamp: moment().format(),
-                        type: "top-up",
-                        snapShot: {
-                          response: res.jsonResponse
-                        }
-                      };
-                      vm.insertAuditLog("transaction", dataToSave);
-                    }
-                  }
-                })
-                .render("#paypal-btn")
-                .catch((error) => {
-                    console.error("failed to render the PayPal Buttons", error);
-                });
-        })
-        .catch((error) => {
-            console.error("failed to load the PayPal JS SDK script", error);
-        });
-      } catch (error) {
-        this.$q.notify({
-          message: 'Error on fetching data',
-          color: 'negative',
-        });
-      }
-    },
-
-    async updateUserSubscription(data){
-      const user = LocalStorage.getItem('user')
-      const userId = user ? user.uid : null
-      try {
-        let payload = {
-          isSubscribed: true,
-          limitUsed: 0,
-          limit: 50000,
-          topUpUsed: 0,
-          topUpLimit: 0,
-          topUpActive: false,
-          topUpDate: '',
-          totalLimit: 50000,
-          totalLimitUsed: 0,
-          subscribeDate: data.purchase_units[0].payments.captures[0].create_time,
-        }
-        // update the users
-        updateDocument(`userProfile`, userId, payload)
-
-        const dataToSave = {
-          actionTaken: "Updated the details",
-          timeStamp: moment().format(),
-          type: "update-data",
-          snapShot: {
-            response: "",
-            data: payload
-          }
-        };
-        this.insertAuditLog("actions", dataToSave);
-        this.getUserDetails();
-      } catch (error) {
-        const dataToSave = {
-          actionTaken: "Error updating the details",
-          timeStamp: moment().format(),
-          type: "update-data",
-          snapShot: {
-            response: error,
-            data: ""
-          }
-        };
-        this.insertAuditLog("actions", dataToSave);
-        this.$q.notify({
-          message: 'Error saving data',
-          color: 'negative',
-        });
-      }
-    },
-    async updateUserTopUp(data){
-      const user = LocalStorage.getItem('user')
-      const userId = user ? user.uid : null
-      try {
-        let payload = {
-          topUpLimit: 50000,
-          topUpActive: true,
-          topUpDate: data.purchase_units[0].payments.captures[0].create_time,
-          totalLimit: Number(this.userData.totalLimit) + 50000,
-        }
-        // update the users
-        updateDocument(`userProfile`, userId, payload)
-        // const dataToSave = {
-        //   actionTaken: "Updated the details",
-        //   timeStamp: moment().format(),
-        //   type: "update-data",
-        //   snapShot: {
-        //     response: "",
-        //     data: payload
-        //   }
-        // };
-        // this.insertAuditLog("actions", dataToSave);
-        this.getUserDetails();
-      } catch (error) {
-        // const dataToSave = {
-        //   actionTaken: "Error updating the details",
-        //   timeStamp: moment().format(),
-        //   type: "update-data",
-        //   snapShot: {
-        //     response: error,
-        //     data: ""
-        //   }
-        // };
-        // this.insertAuditLog("actions", dataToSave);
-        this.$q.notify({
-          message: 'Error saving data',
-          color: 'negative',
-        });
-      }
-    },
-
-    // Some MEthods
     async getUserDetails(){
       try {
         const user = LocalStorage.getItem('user')
@@ -567,31 +449,52 @@ export default {
         });
       }
     },
-    showHistoryModal(data = {}){
-      // Setting the Data to display
-      this.selectedHistory = data
-      // Hide and Show of the Dialog
-      this.openHistory = !this.openHistory
+    closePetForm(){
+      this.petList = []
+      this.openPetForm = false
     },
-    copyToClipboard(text) {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      textarea.setSelectionRange(0, textarea.value.length);
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      this.$q.notify({
-        message: 'Text copied to clipboard!',
-        color: 'positive',
-      });
+    closeSchedForm(){
+      this.scheduleForm = {
+        pet: "",
+        reasonOfVisit: "", //Vaccine, Checkup, Followup, Deworm, Consultation
+        scheduleDate: "",
+        remarks: "",
+        status: "pending"
+      }
+      this.openScheduleForm = false
+    },
+    addPetDetails(){
+      this.petList.push(this.petForm)
+      this.petForm = {
+        petName: "",
+        dateOfBirth: "",
+        breed: "",
+        weight: "",
+        gender: "",
+        type: "dog"
+      }
+    },
+    generateAge(ageVal){
+      var today = new Date();
+      var birthDate = new Date(ageVal);
+      var age = today.getFullYear() - birthDate.getFullYear();
+      var m = today.getMonth() - birthDate.getMonth();
+      console.log(today.getMonth())
+      console.log(birthDate.getMonth())
+      console.log(today, age, m)
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) 
+      {
+        age--;
+      }
+
+      return ageVal;
     },
     async fetchSearchList(){
       try {
         const user = LocalStorage.getItem('user')
         const userId = user ? user.uid : null
-        const res = await listDocuments(`account-log/${userId}/logs`)
-        this.textHistory = res
+        const res = await listDocuments(`userPets/${userId}/list`)
+        this.petListDog = res;
       } catch (error) {
         this.$q.notify({
           message: 'Error on fetching list',
@@ -599,98 +502,17 @@ export default {
         });
       }
     },
-    async generateResponse() {
-      if(this.monthlyLimitValidate && !this.isTopup){
-        this.$q.notify({
-          message: 'You used all of your Limit please top up to generate more',
-          color: 'negative',
-        });
-        return false;
-      }
-
-      this.generateLoading = true;
-
+    async saveToFirebase() {
       try {
-        const response = await openai.chat.completions.create({
-          model: 'gpt-4',
-          messages: [
-            { role: 'system', content: 'Correct the grammar of the given text' },
-            { role: 'user', content: this.userInput },
-          ],
-          temperature: 1,
-          max_tokens: 256,
-          top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-        });
-
-        if (response && response.choices.length > 0) {
-          const generatedText = response.choices[0].message.content;
-          this.saveToFirebase(generatedText);
-          this.generatedText = generatedText;
-          this.generateLoading = false;
-
-          // Update the Limit
-          let letterCount = this.letterCountForGeneratedText;
-
-          this.updateUsedLimitCount(letterCount)
-
-          // const dataToSave = {
-          //   actionTaken: "Generate word correction API",
-          //   timeStamp: moment().format(),
-          //   type: "generate-data-AI",
-          //   snapShot: {
-          //     response: response,
-          //     data: ""
-          //   }
-          // };
-          // this.insertAuditLog("actions", dataToSave);
-
-          // Refresh the user data
-          this.getUserDetails()
-        } else {
-          this.generatedText = null;
-          this.generateLoading = false;
-        }
-      } catch (error) {
-        // const dataToSave = {
-        //   actionTaken: "Generate word correction API Error",
-        //   timeStamp: moment().format(),
-        //   type: "generate-data-AI",
-        //   snapShot: {
-        //     response: error,
-        //     data: ""
-        //   }
-        // };
-        // this.insertAuditLog("actions", dataToSave);
-        console.error('Error generating response:', error);
-        this.generatedText = null;
-        this.generateLoading = false;
-      }
-    },
-    saveToFirebase(generatedText) {
-      try {
-        const dataToSave = {
-          userInput: this.userInput,
-          generatedText: generatedText,
-          timestamp: new Date().toLocaleString(),
-        };
         const user = LocalStorage.getItem('user');
         const userId = user ? user.uid : '';
 
-        createDocument(`account-log/${userId}/logs`, dataToSave);
-
-        // const dataToSaveLogs = {
-        //     actionTaken: "Insert generate details",
-        //     timeStamp: moment().format(),
-        //     type: "insert-details",
-        //     snapShot: {
-        //       response: response,
-        //       data: dataToSave
-        //     }
-        //   };
-        //   this.insertAuditLog("actions", dataToSaveLogs);
+        await this.petList.forEach(element => {
+          createDocument(`userPets/${userId}/list`, element);
+        });
+        
         this.fetchSearchList()
+        this.closePetForm()
       } catch (error) {
         this.$q.notify({
           message: 'Error saving data',
@@ -698,20 +520,16 @@ export default {
         });
       }
     },
-    updateUsedLimitCount(wordCount) {
+    async saveScheduleToFirebase() {
       try {
         const user = LocalStorage.getItem('user');
         const userId = user ? user.uid : '';
-        let payload = {
-          totalLimitUsed: Number(this.userData.totalLimitUsed) + Number(wordCount),
-        }
-        if(this.monthlyLimitValidate){
-          payload.topUpUsed = Number(this.userData.topUpUsed) + Number(wordCount)
-        } else {
-          payload.limitUsed = Number(this.userData.limitUsed) + Number(wordCount)
-        }
-        // update the users
-        updateDocument(`userProfile`, userId, payload)
+        this.scheduleForm.ownerId = userId
+
+        createDocument(`petSchedule/${userId}/list`, this.scheduleForm);
+        
+        this.fetchScheduleList()
+        this.closeSchedForm()
       } catch (error) {
         this.$q.notify({
           message: 'Error saving data',
@@ -727,9 +545,20 @@ export default {
 
 <style scoped>
 /* start */
-.my-card {
-  border: 1px solid #80808021;
-  border-radius: 15px;
+.my-card{
+    border-radius: 15px;
+    box-shadow: 0px 0px 3px -2px !important;
+}
+.my-card-item{
+  border-radius: 20px;
+}
+.my-card-schedule{
+  background-image: url(/imgs/icons/paw.png);
+  background-position: 110% 6px;
+  border-radius: 13px;
+  background-size: 35%;
+  background-repeat: no-repeat;
+  background-color: antiquewhite;
 }
 
 .userInputed {
@@ -744,7 +573,30 @@ export default {
 }
 
 .generatedIconDash{
+  color: white;
+  padding-left: 25px;
+  padding-right: 25px;
   background: rgb(0,177,250);
-  background: linear-gradient(122deg, rgba(0,177,250,1) 0%, rgba(149,45,253,1) 89%);
+  background: linear-gradient(44deg, rgb(1 98 223) 12%, rgba(149, 45, 253, 1) 83%);
+}
+.singleImgOpcity{
+  opacity: 0.4;
+}
+
+.formBG-dog{
+  background: url(/imgs/icons/dog.png) no-repeat;
+  background-position: 110% 6px;
+  border-radius: 13px;
+  background-size: 35%;
+  background-repeat: no-repeat;
+  background-color: antiquewhite;
+}
+.formBG-cat{
+  background: url(/imgs/icons/cat.png) no-repeat;
+  background-position: 110% 6px;
+  border-radius: 13px;
+  background-size: 35%;
+  background-repeat: no-repeat;
+  background-color: antiquewhite;
 }
 </style>

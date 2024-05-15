@@ -7,10 +7,10 @@ import { Loading, Notify } from 'quasar'
 import moment from 'moment'
 
 const register = (data) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     Loading.show()
 
-    createUserWithEmailAndPassword(
+    await createUserWithEmailAndPassword(
       auth,
       data.email,
       data.confirmPassword,
@@ -26,7 +26,7 @@ const register = (data) => {
 
         // Save user data to Firestore
         const docRef = doc(db, 'userProfile', user.uid)
-
+        
         const userData = {
           firstName: data.firstName,
           lastName: data.lastName,
@@ -38,6 +38,7 @@ const register = (data) => {
           userType: "client",
           joinDate: moment().format()
         }
+        
 
         return setDoc(docRef, userData).then(() => {
           Loading.hide()

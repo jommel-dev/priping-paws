@@ -1,18 +1,22 @@
 <template>
-  <q-page class="">
+  <q-page class="q-pa-sm formBG-dog">
+    <q-img
+      @click="$router.push('/')"
+      width="50%"
+      src="/imgs/logo1.png"
+    />
+    
     <div class="row q-mb-xl q-pt-xl" style="height: 60vh;">
-      <div class="col col-md-12 q-pl-xl">
-        <div class="q-pa-xl">
-          <span class="text-bold text-h4 q-mr-xl">Purr-Parents's Login</span><br/>
-          <span class="text-caption">Login your account to check the details of your pets.</span><br/>
-          <span class="text-caption">Please keep you credentials secret</span>
-        </div>
+      <div class="col col-md-12 q-pl-lg">
+        <span class="text-bold text-h4 q-mr-xl">Login</span><br/>
+          <span class="text-caption text-grey-8">Login your account to check the details of your pets.</span><br/>
+          <span class="text-caption text-grey-8">Please keep you credentials secret</span>
       </div>
       <div class="col col-xs-12 col-sm-12 col-md-12 flex items-center q-pa-lg">
         <div class="fit row wrap justify-center items-start content-start">
-          <q-card class="q-pa-md q-mb-md" style="width: 400px; max-width: 80vw; border-radius: 10px;">
+          <q-card class="q-pa-md q-mb-md shadow-0" style="width: 85vw; max-width: 90vw; border-radius: 20px;">
             <q-form ref="form" class="q-gutter-md q-mt-md" @submit="submitLogin">
-              <q-card-section style="max-height: 60vh" class="scroll">
+              <q-card-section class="scroll">
                   <q-input
                       outlined
                       v-model="email"
@@ -31,14 +35,13 @@
                     label="Password"
                     name="password"
                     type="password"
-                    class="q-mb-md"
                   >
                     <template v-slot:prepend>
                       <q-icon name="password" />
                     </template>
                   </q-input>
 
-                  <a class="text-primary text-bold cursor-pointer">Forgot password?</a>
+                  <!-- <a class="text-primary text-bold cursor-pointer">Forgot password?</a> -->
               </q-card-section>
 
               <q-card-actions>
@@ -100,9 +103,11 @@ export default defineComponent({
 <style scoped>
 .customLoginBtn {
     color: white;
-    border-radius: 20px;
+    border-radius: 25px;
+    padding-left: 25px;
+    padding-right: 25px;
     background: rgb(0,177,250);
-    background: radial-gradient(circle, rgba(0,177,250,1) 0%, rgba(45,81,253,1) 91%);
+    background: linear-gradient(44deg, rgb(1 98 223) 12%, rgba(149, 45, 253, 1) 83%);
 }
 .headStyle{
     width: 25%;
@@ -129,5 +134,11 @@ export default defineComponent({
 }
 .footerBackground{
   height: 30vh;
+}
+.formBG-dog{
+  background: url(/imgs/icons/dog.png) no-repeat;
+  background-position: 176% 195px;
+  background-color: white;
+  border-radius: 20px;
 }
 </style>

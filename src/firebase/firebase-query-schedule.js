@@ -2,7 +2,7 @@ import { db } from './index.js'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { Loading, Notify } from 'quasar'
 
-const getQueryWithFilter = async (collectionPath, filterField, filterValue) => {
+const getQuerySchedWithFilter = async (collectionPath, filterField, filterValue, dateField, dateValue) => {
   return new Promise((resolve, reject) => {
     // Loading.show()
 
@@ -12,7 +12,8 @@ const getQueryWithFilter = async (collectionPath, filterField, filterValue) => {
       if (filterValue) {
         q = query(
           collection(db, collectionPath),
-          where(filterField, '==', filterValue)
+          where(filterField, '==', filterValue),
+          where(dateField, '==', dateValue),
         )
       } else {
         q = query(collection(db, collectionPath))
@@ -37,4 +38,4 @@ const getQueryWithFilter = async (collectionPath, filterField, filterValue) => {
   })
 }
 
-export default getQueryWithFilter
+export default getQuerySchedWithFilter

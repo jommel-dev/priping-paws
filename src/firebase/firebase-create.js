@@ -4,16 +4,16 @@ import { Loading, Notify } from 'quasar'
 
 const createDocument = async (collectionName, data) => {
   return new Promise((resolve, reject) => {
-    Loading.show()
+    // Loading.show()
 
     try {
       const docRef = doc(collection(db, collectionName))
       setDoc(docRef, data).then(() => {
-        Loading.hide()
+        // Loading.hide()
         resolve()
       })
     } catch (err) {
-      Loading.hide()
+      // Loading.hide()
       Notify.create({
         type: 'negative',
         message: err.message
