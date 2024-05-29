@@ -37,6 +37,35 @@
           <span class="text-bold"><a href="/member/login">Login Here!</a></span>
         </span>
       </div>
+      <div class="col col-xs-12 col-sm-12 col-md-12 q-pt-xl q-pa-sm">
+        <span class="text-h6 text-bold">Announcements</span><br/>
+        <q-list>
+          <q-item
+            v-for="(item, key) in announcements"
+            :key="key"
+          >
+            <q-item-section avatar>
+              <q-icon :name="item.subject.icon" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label class="text-bold">{{item.title}}</q-item-label>
+              <q-item-label 
+                caption 
+                class="text-black"
+              >
+                <span v-html="item.description || 'No Content'"></span>
+              </q-item-label>
+              <q-item-label caption>
+                <div class="text-caption text-grey-9" style="font-size: 8pt;">
+                  {{`By ${item.createdBy}`}} to {{item.tags.join(', ')}}
+                </div>
+              </q-item-label>
+            </q-item-section>
+
+            <q-separator spaced inset />
+          </q-item>
+        </q-list>
+      </div>
     </div>
   </q-page>
 </template>

@@ -1,11 +1,46 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header class=" bg-transparent text-black no-box-shadow no-shadow">
+  <q-layout view="hHh lpR fFf">
+    <q-header class="bg-white text-black no-box-shadow no-shadow">
       <q-toolbar>
-        <q-btn flat @click="drawer = !drawer" round dense icon="menu" />
+        <!-- <q-btn flat @click="drawer = !drawer" round dense icon="menu" /> -->
+        <span class="text-h5 text-bold q-ml-md text-red">Primping <span class="text-deep-purple-7">Paws</span></span>
         <q-space />
-        <!-- <q-toolbar-title><q-icon name="translate" size="1.5em" /><span class="text-h5 text-bold q-ml-md"> The Grammar<span class="text-orange">APP</span></span></q-toolbar-title> -->
-        <q-btn flat dense @click="logout" v-close-popup>sign out</q-btn>
+        
+        <q-chip
+          v-model="cookies"
+          color="primary"
+          text-color="white"
+          class="q-mt-sm"
+        >
+          <q-avatar>
+            <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+          </q-avatar>
+          <div class="ellipsis">
+            {{ displayName }}
+            <q-tooltip>{{ displayName }}</q-tooltip>
+          </div>
+          
+        </q-chip>
+        <q-btn-dropdown 
+          color="deep-purple-7"
+          flat
+          dense
+          dropdown-icon="settings"
+        >
+          <q-list>
+            <q-item clickable v-close-popup>
+              <q-item-section>
+                <q-item-label>Profile</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-close-popup @click="logout">
+              <q-item-section>
+                <q-item-label>Logout</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-header>
 
@@ -14,31 +49,20 @@
       show-if-above
       v-model="drawer"
       side="left"
-      class="q-pa-md bg-transparent"
+      :mini="true"
+      :width="200"
+      :breakpoint="500"
+      bordered
+      mini-width="70"
+      class="q-pa-md"
+      style="border-radius: 0px 25px 25px 0px;"
     >
-      <!-- Profile -->
-      <q-toolbar>
-        <q-toolbar-title>
-          <!-- <q-icon name="translate" size="1.5em" /> -->
-          <span class="text-h5 text-bold q-ml-md text-red">Primpping <span class="text-deep-purple-7">Paws</span></span>
-        </q-toolbar-title>
-      </q-toolbar>
-      <q-separator />
-      <q-toolbar>
-        <q-avatar>
-            <img src="https://cdn.quasar.dev/img/boy-avatar.png">
-        </q-avatar>
-        <span class="q-ml-md">
-          {{displayName}}
-        </span>
-      </q-toolbar>
-
-      <q-separator />
       <div class="q-mt-md">
         <q-list >
         <SideNav
           v-for="link in linksList"
           :key="link.title"
+          :userType="userData.userType"
           v-bind="link"
         />
         </q-list>
@@ -63,31 +87,68 @@ import getDetailsDocument from '../firebase/firebase-get';
 
 import { ref } from 'vue'
 const linksList = [
+  // All User
   {
     title: 'Dashboard',
-    icon: 'space_dashboard',
-    link: 'admindashboard'
+    icon: 'calendar_month',
+    link: 'admindashboard',
+    user: "*"
+  },
+
+  // Doctor
+  {
+    title: 'Manage Clients',
+    icon: 'pets',
+    link: 'users',
+    user: "admin"
+  },
+
+  // Cashier
+  {
+    title: 'Transactions',
+    icon: 'manage_accounts',
+    link: 'users',
+    user: "admin"
+  },
+  {
+    title: 'Inventory',
+    icon: 'manage_accounts',
+    link: 'users',
+    user: "admin"
+  },
+  {
+    title: 'POS',
+    icon: 'point_of_sale',
+    link: 'users',
+    user: "admin"
+  },
+
+  // Super Admin Controls
+  {
+    title: 'Manage Users',
+    icon: 'manage_accounts',
+    link: 'users',
+    user: "superadmin"
+  },
+  {
+    title: 'Announcements',
+    icon: 'campaign',
+    link: 'announcements',
+    user: "superadmin"
   },
   // {
-  //   title: 'Manage Users',
-  //   icon: 'manage_accounts',
-  //   link: 'users'
+  //   title: 'Manage Inventory',
+  //   icon: 'vaccines',
+  //   link: 'users',
+  //   user: "superadmin"
   // },
-  {
-    title: 'Patients',
-    icon: 'pets',
-    link: 'patients'
-  },
-  {
-    title: 'Announcement',
-    icon: 'campaign',
-    link: 'users'
-  },
-  {
-    title: 'Settings',
-    icon: 'settings',
-    link: 'users'
-  },
+  // {
+  //   title: 'Settings',
+  //   icon: 'settings_suggest',
+  //   link: 'users',
+  //   user: "superadmin"
+  // },
+
 
 ]
 
@@ -95,7 +156,7 @@ export default {
   name: 'MainLayout',
     setup () {
     return {
-      drawer: ref(false),
+      drawer: ref(true),
       displayName: '',
       userData: {}
     }
@@ -132,7 +193,7 @@ export default {
     },
     async logout () {
       signout().then(() => {
-        this.$router.push('/')
+        this.$router.push('/admin/login')
       })
     },
     getDisplayNameFromLocalStorage () {

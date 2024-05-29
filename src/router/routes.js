@@ -67,6 +67,11 @@ const routes = [
         component: () => import('pages/Admin/Logs.vue')
       },
       {
+        path: 'announcements',
+        name: 'announcements',
+        component: () => import('pages/Admin/Announcements.vue')
+      },
+      {
         path: 'settings',
         name: 'settings',
         component: () => import('pages/Admin/Settings.vue')

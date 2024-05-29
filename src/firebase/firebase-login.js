@@ -1,12 +1,15 @@
 import { auth } from './index.js'
+import getDetailsDocument from './firebase-get';
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { Loading, Notify } from 'quasar'
+import { Loading, Notify, LocalStorage } from 'quasar'
 
 const login = (data) => {
   return new Promise((resolve, reject) => {
     Loading.show()
 
-    signInWithEmailAndPassword(auth, data.email, data.password).then(userCredential => {
+    signInWithEmailAndPassword(auth, data.email, data.password).then(async userCredential => {
+      const res = await getDetailsDocument(`userProfile`, userCredential.user.uid)
+      LocalStorage.set('userDetails', res)
       Loading.hide()
       resolve(userCredential.user)
     }).catch(err => {

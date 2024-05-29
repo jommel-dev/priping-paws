@@ -338,7 +338,8 @@ export default {
         reasonOfVisit: "", //Vaccine, Checkup, Followup, Deworm, Consultation
         scheduleDate: "",
         remarks: "",
-        status: "pending"
+        status: "pending",
+        visitType: "appointment"
       },
 
       openPetForm: false,

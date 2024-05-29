@@ -19,7 +19,7 @@
       <!-- Profile -->
       <q-toolbar>
         <q-toolbar-title>
-          <span class="text-h5 text-bold q-ml-md text-red">Primpping <span class="text-deep-purple-7">Paws</span></span>
+          <span class="text-h5 text-bold q-ml-md text-red">Primping <span class="text-deep-purple-7">Paws</span></span>
         </q-toolbar-title>
       </q-toolbar>
       <!-- <q-separator /> -->
@@ -66,33 +66,17 @@ const linksList = [
     title: 'Dashboard',
     icon: 'subtitles',
     link: 'dashboard',
+    user: "*",
     crumbs: [
       {label: '', icon: 'home', link: '/'},
       {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
     ]
   },
-  // {
-  //   title: 'My Pet',
-  //   icon: 'history',
-  //   link: 'history',
-  //   crumbs: [
-  //     {label: '', icon: 'home', link: '/'},
-  //     {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
-  //   ]
-  // },
-  // {
-  //   title: 'My Schedule',
-  //   icon: 'sticky_note_2',
-  //   link: 'note',
-  //   crumbs: [
-  //     {label: '', icon: 'home', link: '/'},
-  //     {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}
-  //   ]
-  // },
   {
     title: 'History',
     icon: 'sticky_note_2',
     link: 'note',
+    user: "client",
     crumbs: [
       {label: '', icon: 'home', link: '/'},
       {label: 'Dashboard', icon: 'dashboard', link: 'dashboard'}

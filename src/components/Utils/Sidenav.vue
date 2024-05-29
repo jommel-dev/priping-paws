@@ -5,14 +5,13 @@
         clickable
         tag="a"
         :key="title"
-        v-if="children.length === 0"
+        v-if="checkItemUserType(children, user)"
         :to="{name: link}"
       > 
         <q-item-section
           v-if="icon"
           avatar
           class="q-pt-sm q-pb-sm q-pl-sm"
-          :class="$router.currentRoute._value.name === link ? 'bordered-no-right' : ''"
         >
           <q-avatar 
             rounded 
@@ -67,6 +66,7 @@
 
 <script>
 import { defineComponent } from 'vue'
+import { LocalStorage } from 'quasar'
 
 export default defineComponent({
     name: 'SideNavigation',
@@ -91,12 +91,26 @@ export default defineComponent({
             default: [{title: '', icon: 'home', link: '/'}]
         },
 
+        user: {
+            type: String,
+            default: "*"
+        },
+
         children: {
           type: Array,
           default: []
-        }
+        },
     },
     methods:{
+      checkItemUserType(child, uType){
+        const user = LocalStorage.getItem('userDetails')
+        let show = true;
+        if(uType !== "*" && user.userType !== uType){
+          show = false;
+        }
+        
+        return child.length === 0 && show
+      },
       checkSubchildOpen(childs){
         // Get Current route open
         let currRoute = this.$router.currentRoute._value.name;

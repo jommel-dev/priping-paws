@@ -1,7 +1,17 @@
 <template>
     <div class="row q-pa-md">
         <div class="col-12 col-xs-12 col-sm-12 col-md-12 q-mb-md">
-            <span class="text-h4 text-bold">Dashboard</span>
+            <span class="text-h4 text-bold">Today's Schedule</span>
+            <q-btn 
+                v-if="this.userData.userType !== 'admin'"
+                @click="openWalkInModal" 
+                class="float-right" 
+                label="Add Walk In" 
+                size="md" 
+                flat 
+                color="primary" 
+                icon="add_circle" 
+            />
             <q-separator />
         </div>
         <div class="col col-xs-12 col-sm-12 col-md-12">
@@ -17,6 +27,17 @@
                 <span class="text-h6 text-grey-8">No Schedule Found!</span><br/>
                 <span class="text-caption text-grey-8">
                     Looks like you dont have added your pets schedule.
+                </span><br>
+                <span class="text-center">
+                    <q-btn 
+                        @click="fetchSearchList" 
+                        label="Reload List" 
+                        size="md" 
+                        flat 
+                        no-caps
+                        color="primary" 
+                        icon="refresh" 
+                    />
                 </span>
             </div>
 
@@ -31,10 +52,14 @@
                     <label class="text-h6 q-ml-sm">{{`${item.pet.label}'s ${item.reasonOfVisit}`}}</label><br/><br/>
                     <q-icon name="schedule" size="xs" color="primary" />
                     <span class="text-caption q-ml-sm" >
-                    {{moment(`${item.scheduleDate} ${item.scheduleTime}`).format('LT')}} - {{moment(item.scheduleDate).format('dddd LL')}}
+                    {{item.visitType.toUpperCase()}} - {{moment(item.scheduleDate).format('dddd LL')}}
                     </span>
                 </q-card-section>
             </q-card>
+        </div>
+        <div class="col col-xs-12 col-sm-12 col-md-12 q-mt-md">
+            <q-separator />
+            Other staffs
         </div>
 
         <q-dialog
@@ -364,16 +389,98 @@
                 </q-card-actions>
             </q-card>
         </q-dialog>
+
+        <!-- Walk IN Form -->
+        <q-dialog
+            v-model="openWalkInForm"
+        >
+            <q-card style="width: 90vw; max-width: 90vw; border-radius: 20px;">
+                <q-card-section class="q-pt-none">
+                    <div class="text-h6 q-mt-sm">Pet Schedule Details</div>
+                    <div class="row">
+                        <q-select
+                            class="col-12 col-md-6 q-pa-xs"
+                            v-model="walkInForm.pet"
+                            :options="petsOption"
+                            label="Pet To Schedule"
+                            dense
+                            outlined
+                            use-input
+                            use-chips
+                            @filter="filterFn"
+                            :options-dense="true"
+                        />
+                        <q-select
+                            class="col-12 col-md-6 q-pa-xs"
+                            v-model="walkInForm.reasonOfVisit"
+                            :options="schedTypeOpt"
+                            label="Reason of visit"
+                            dense
+                            outlined
+                            :options-dense="true"
+                        />
+                        <q-input
+                            type="textarea" 
+                            dense 
+                            v-model="walkInForm.remarks" 
+                            outlined 
+                            label="Remarks / Complains" 
+                            class="col-12 col-md-6 q-pa-xs" 
+                        />
+                    </div>
+                    <div class="row">
+                        <q-input
+                            dense 
+                            v-model="walkInForm.weight" 
+                            outlined 
+                            label="Current Weight" 
+                            class="col-6 col-md-6 q-pa-xs" 
+                        />
+                        <q-input
+                            dense 
+                            v-model="walkInForm.heartRate" 
+                            outlined 
+                            label="Heart Rate" 
+                            class="col-6 col-md-6 q-pa-xs" 
+                        />
+                        <q-input
+                            dense 
+                            v-model="walkInForm.respiratory" 
+                            outlined 
+                            label="Respiratory" 
+                            class="col-6 col-md-6 q-pa-xs" 
+                        />
+                        <q-input
+                            dense 
+                            v-model="walkInForm.temperature" 
+                            outlined 
+                            label="Temperature" 
+                            class="col-6 col-md-6 q-pa-xs" 
+                        />
+                    </div>
+                </q-card-section>
+
+                <q-card-actions align="right" class="bg-white text-teal">
+                    <q-btn color="red" flat label="Cancel" @click="closeWalkInForm" />
+                    <q-btn color="deep-purple" flat label="Submit" @click="saveScheduleToFirebase" />
+                </q-card-actions>
+            </q-card>
+            </q-dialog>
     </div>
 </template>
 
 <script>
+import { LocalStorage } from 'quasar';
 import moment from 'moment';
 import getDashboardDetails from '../../firebase/firebase-dashboard';
 import getPetDetails from '../../firebase/firebase-get-pet-details';
+import getDetailsDocument from '../../firebase/firebase-get';
 import getQueryWithFilter from '../../firebase/firebase-query';
 import updateDocument from '../../firebase/firebase-update';
 import createDocument from '../../firebase/firebase-create';
+import petListDocuments from '../../firebase/firebase-pet-list';
+
+const currDate = moment().format("YYYY-MM-DD");
 
 export default {
     name: 'PageAdminDashboard',
@@ -381,9 +488,25 @@ export default {
         return {
             userData: {},
             openScheduleForm: false,
+            openWalkInForm: false,
             schedTab: "details",
             scheduleList: [],
             historyList: [],
+            petsOption: [],
+            petsOptionOriginal: [],
+            walkInForm: {
+                pet: null,
+                reasonOfVisit: "", //Vaccine, Checkup, Followup, Deworm, Consultation
+                scheduleDate: currDate,
+                remarks: "",
+                status: "pending",
+                visitType: "walk-in",
+                weight: "",
+                heartRate: "",
+                respiratory: "",
+                temperature: "",
+                currMonthAge: "",
+            },
             selectSched: {
                 pet: {
                     label:"",
@@ -434,8 +557,9 @@ export default {
         }
     },
     created(){
-        this.getUserDetails()
-        this.fetchSearchList();
+        this.getUserDetails().then(() => {
+            this.fetchSearchList();
+        })
     },
     methods:{
         moment,
@@ -469,18 +593,47 @@ export default {
                 })
             } catch (error) {
                 this.$q.notify({
-                message: 'Error on fetching list',
-                color: 'negative',
+                    message: 'Error on fetching list',
+                    color: 'negative',
+                });
+            }
+        },
+        async openWalkInModal(){
+            this.$q.loading.show();
+            await this.fetchAllPetsList()
+            this.openWalkInForm = true
+            this.$q.loading.hide();
+        },
+        async closeWalkInForm(){
+            this.petsOption = []
+            this.petsOptionOriginal = []
+            this.openWalkInForm = false
+        },
+        async fetchAllPetsList(){
+            try {
+                await petListDocuments().then((res) => {
+                    this.petsOption = res
+                    this.petsOptionOriginal = res
+                })
+            } catch (error) {
+                this.$q.notify({
+                    message: 'Error on fetching list',
+                    color: 'negative',
                 });
             }
         },
         async openSchedModal(data){
+            console.log(data)
             const usrType = this.userData.userType;
             const res = await getPetDetails(`userPets/${data.ownerId}/list`, data.pet.value)
             const history = await getQueryWithFilter(`petSchedule/${data.ownerId}/list`, "pet", data.pet)
             this.selectSched.details = res
             this.historyList = history
             if(usrType === "admin"){
+                this.selectSched.checkUpDetails.weight = data.weight || ""
+                this.selectSched.checkUpDetails.temperature = data.temperature || ""
+                this.selectSched.checkUpDetails.respiratory = data.respiratory || ""
+                this.selectSched.checkUpDetails.heartRate = data.heartRate || ""
                 this.openScheduleForm = true
             } else {
                 this.transacForm.newSchedule.pet = data.pet
@@ -560,6 +713,34 @@ export default {
                         message: 'Error saving data',
                         color: 'negative',
                     });
+                }
+            })
+        },
+        async saveScheduleToFirebase() {
+            try {
+                this.walkInForm.ownerId = this.walkInForm.pet.ownerId
+
+                createDocument(`petSchedule/${this.walkInForm.ownerId}/list`, this.walkInForm);
+                
+                this.fetchSearchList()
+                this.closeWalkInForm()
+            } catch (error) {
+                this.$q.notify({
+                message: 'Error saving data',
+                color: 'negative',
+                });
+            }
+        },
+        filterFn(val, update){
+            update(() => {
+                if (val === '') {
+                    this.petsOption = this.petsOptionOriginal
+                }
+                else {
+                    const needle = val.toLowerCase()
+                    this.petsOption = this.petsOptionOriginal.filter(
+                        v => v.label.toLowerCase().indexOf(needle) > -1
+                    )
                 }
             })
         }

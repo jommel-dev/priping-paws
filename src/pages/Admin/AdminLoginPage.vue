@@ -85,7 +85,7 @@ export default defineComponent({
         await login(payload).then(async (res) => {
           let id = res.uid
           const user = await getDetailsDocument(`userProfile`, id)
-          const authLog = ["admin", "cashier"]
+          const authLog = ["admin", "cashier", "superadmin"]
           if(authLog.includes(user.userType)){
             this.$router.push('/admin/dashboard')
           } else {

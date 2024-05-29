@@ -17,17 +17,16 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-console.log(getApps().length )
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app)
 export const db = getFirestore(app)
-console.log(db)
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
       LocalStorage.set('user', user)
     } else {
       LocalStorage.remove('user')
+      LocalStorage.remove('userDetails')
     }
   })
 

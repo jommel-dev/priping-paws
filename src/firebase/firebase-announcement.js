@@ -5,17 +5,13 @@ import { Loading, Notify } from 'quasar'
 const getAnnouncements = async () => {
   return new Promise(async (resolve, reject) => {
     Loading.show()
-    // console.log('sada')
     try {
       let dasboardContent = {
         list: [],
       }
-      // console.log('sada2')
-
       // Checking users
       const userProfilesRef = collection(db, "announcements");
       const userQ = query(userProfilesRef, where("status", "==", 1))
-      // console.log('sada3')
       const usersDashboard = await getDocs(userQ).then((querySnapshot) => {
         let userList = []
         querySnapshot.forEach((doc) => {
